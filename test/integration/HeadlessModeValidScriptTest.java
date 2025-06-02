@@ -19,6 +19,11 @@ import static org.junit.Assert.*;
 
 /**
  * Tests for valid command scripts in headless mode.
+ *
+ * This class verifies:
+ * - That valid scripted commands update the model correctly.
+ * - That expected output is rendered appropriately.
+ * - That command ordering and exit behavior work as intended.
  */
 public class HeadlessModeValidScriptsTest {
 
@@ -31,6 +36,9 @@ public class HeadlessModeValidScriptsTest {
     view = new MockView();
   }
 
+  /**
+   * Tests that a scripted create-event command adds an event to the calendar.
+   */
   @Test
   public void testCreateEvent() {
     String script = "create-event 2025-06-10T14:00 Project Discussion\nexit";
@@ -45,6 +53,9 @@ public class HeadlessModeValidScriptsTest {
     assertTrue(view.getOutput().toLowerCase().contains("event created"));
   }
 
+  /**
+   * Tests that a scripted edit-event command modifies the existing event.
+   */
   @Test
   public void testEditEvent() {
     CalendarEvent original = new CalendarEvent("Team Sync", LocalDateTime.of(2025, 6, 11, 9, 0));
@@ -62,6 +73,9 @@ public class HeadlessModeValidScriptsTest {
     ).stream().anyMatch(e -> e.getTitle().equals("Team Sync Updated")));
   }
 
+  /**
+   * Tests that a query-events command returns matching events across a date range.
+   */
   @Test
   public void testQueryEvents() {
     model.addEvent(new CalendarEvent("Meeting A", LocalDateTime.of(2025, 6, 12, 15, 0)));
@@ -76,6 +90,9 @@ public class HeadlessModeValidScriptsTest {
     assertTrue(output.contains("Meeting B"));
   }
 
+  /**
+   * Tests that the exit command terminates execution before subsequent commands.
+   */
   @Test
   public void testExitCommandTerminatesScript() {
     String script = "exit\ncreate-event 2025-07-01T08:00 ShouldNotBeCreated";

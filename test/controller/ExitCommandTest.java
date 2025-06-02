@@ -15,7 +15,10 @@ import static org.junit.Assert.*;
 
 /**
  * Test suite for ExitCommand.
- * Verifies that exit command renders a message without errors.
+ * <p>
+ * This class verifies:
+ * - That executing the exit command renders a farewell message.
+ * - That it completes without throwing any exceptions.
  */
 public class ExitCommandTest {
 
@@ -30,6 +33,9 @@ public class ExitCommandTest {
     };
   }
 
+  /**
+   * Tests that the exit command renders a message that includes 'exit' or 'goodbye'.
+   */
   @Test
   public void testExecuteRendersExitMessage() throws CommandExecutionException {
     ExitCommand cmd = new ExitCommand();
@@ -38,7 +44,9 @@ public class ExitCommandTest {
     assertTrue(view.output.toLowerCase().contains("exit") || view.output.toLowerCase().contains("goodbye"));
   }
 
-  // Mock view for capturing output
+  /**
+   * Mock view for capturing output.
+   */
   private static class TestView implements IView {
     StringBuilder output = new StringBuilder();
 

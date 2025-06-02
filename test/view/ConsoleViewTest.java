@@ -12,6 +12,11 @@ import static org.junit.Assert.*;
 
 /**
  * Unit tests for the ConsoleView class.
+ * <p>
+ * This class verifies:
+ * - Correct rendering of single and multiple messages.
+ * - Proper handling of output streams.
+ * - Expected behavior when output fails.
  */
 public class ConsoleViewTest {
 
@@ -24,12 +29,18 @@ public class ConsoleViewTest {
     view = new ConsoleView(output);
   }
 
+  /**
+   * Tests that a single message is correctly rendered to the output.
+   */
   @Test
   public void testRenderSingleMessage() throws IOException {
     view.renderMessage("Hello, calendar!");
     assertEquals("Hello, calendar!", output.toString().trim());
   }
 
+  /**
+   * Tests that multiple messages are rendered in sequence.
+   */
   @Test
   public void testRenderMultipleMessages() throws IOException {
     view.renderMessage("First message.\n");
@@ -38,6 +49,9 @@ public class ConsoleViewTest {
     assertTrue(output.toString().contains("Second message."));
   }
 
+  /**
+   * Tests that an IOException is thrown when the output stream fails.
+   */
   @Test(expected = IOException.class)
   public void testRenderMessageThrowsIOException() throws IOException {
     Appendable brokenOutput = new Appendable() {

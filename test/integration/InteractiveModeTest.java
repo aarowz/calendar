@@ -19,6 +19,11 @@ import static org.junit.Assert.*;
 
 /**
  * Tests for the calendar in interactive mode.
+ *
+ * This class verifies:
+ * - That typed input commands are parsed and executed properly.
+ * - That the model updates and output rendering match expectations.
+ * - That invalid commands and exit behavior are handled gracefully.
  */
 public class InteractiveModeTest {
 
@@ -31,6 +36,9 @@ public class InteractiveModeTest {
     view = new MockView();
   }
 
+  /**
+   * Tests that a create-event command results in a new event being added to the model.
+   */
   @Test
   public void testInteractiveCreateEvent() {
     String input = "create-event 2025-06-15T13:00 Interview Prep\nexit\n";
@@ -45,6 +53,9 @@ public class InteractiveModeTest {
     assertTrue(view.getOutput().toLowerCase().contains("event created"));
   }
 
+  /**
+   * Tests that an edit-event command updates an existing event in the model.
+   */
   @Test
   public void testInteractiveEditEvent() {
     CalendarEvent event = new CalendarEvent("Original", LocalDateTime.of(2025, 6, 16, 9, 0));
@@ -61,6 +72,9 @@ public class InteractiveModeTest {
     ).stream().anyMatch(e -> e.getTitle().equals("Updated")));
   }
 
+  /**
+   * Tests that a query-events command retrieves and displays relevant events.
+   */
   @Test
   public void testInteractiveQueryEvents() {
     model.addEvent(new CalendarEvent("Workout", LocalDateTime.of(2025, 6, 18, 7, 30)));
@@ -73,6 +87,9 @@ public class InteractiveModeTest {
     assertTrue(output.contains("Workout"));
   }
 
+  /**
+   * Tests that an unknown command results in an appropriate error message.
+   */
   @Test
   public void testInteractiveHandlesUnknownCommand() {
     String input = "do-stuff-now\nexit\n";
@@ -82,6 +99,9 @@ public class InteractiveModeTest {
     assertTrue(view.getOutput().toLowerCase().contains("unknown command"));
   }
 
+  /**
+   * Tests that only the exit command results in clean shutdown without errors.
+   */
   @Test
   public void testInteractiveExitOnly() {
     String input = "exit\n";
