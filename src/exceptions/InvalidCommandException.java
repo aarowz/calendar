@@ -4,9 +4,23 @@
 package exceptions;
 
 /**
- * Thrown when the user's raw input command is malformed, unsupported, or violates
- * the expected syntax or structure defined by the command parser.
- * Ensures users are guided to follow proper input formats.
+ * Exception thrown when the input command is malformed or unrecognized by the parser.
  */
-public class InvalidCommandException {
+public class InvalidCommandException extends Exception {
+
+  /**
+   * Constructs an InvalidCommandException with a default message.
+   */
+  public InvalidCommandException() {
+    super("Invalid command input.");
+  }
+
+  /**
+   * Constructs an InvalidCommandException with a specific message.
+   *
+   * @param message the detail message
+   */
+  public InvalidCommandException(String message) {
+    super(message);
+  }
 }

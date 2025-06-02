@@ -4,9 +4,24 @@
 package exceptions;
 
 /**
- * Thrown when multiple events match the user's query or identification criteria
- * (e.g., same subject and start time), making the target event unclear.
- * Prompts the user to provide more specific input.
+ * Exception thrown when a user's input matches more than one event,
+ * making it ambiguous to determine which event should be operated on.
  */
-public class AmbiguousEventException {
+public class AmbiguousEventException extends Exception {
+
+  /**
+   * Constructs an AmbiguousEventException with no detail message.
+   */
+  public AmbiguousEventException() {
+    super("Multiple events matched the input. Please clarify.");
+  }
+
+  /**
+   * Constructs an AmbiguousEventException with a specific message.
+   *
+   * @param message the detail message
+   */
+  public AmbiguousEventException(String message) {
+    super(message);
+  }
 }

@@ -4,8 +4,15 @@
 package view;
 
 /**
- * Interface representing a view for the calendar application.
- * Provides methods to render messages and errors to the user, abstracting the output mechanism.
+ * Represents a generic view for rendering output messages in a calendar application.
+ * This interface allows for flexibility between console, GUI, and test views.
  */
 public interface IView {
+
+  /**
+   * Renders the given message to the user.
+   *
+   * @param message the message to display
+   */
+  void render(String message);
 }

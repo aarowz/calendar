@@ -4,8 +4,24 @@
 package exceptions;
 
 /**
- * Thrown when an event specified by the user cannot be found in the calendar.
- * Typically used during editing, querying, or deleting an event that does not exist.
+ * Exception thrown when an event cannot be found in the calendar,
+ * typically during edit or delete operations.
  */
-public class EventNotFoundException {
+public class EventNotFoundException extends Exception {
+
+  /**
+   * Constructs an EventNotFoundException with a default message.
+   */
+  public EventNotFoundException() {
+    super("The specified event could not be found.");
+  }
+
+  /**
+   * Constructs an EventNotFoundException with a specific message.
+   *
+   * @param message the detail message
+   */
+  public EventNotFoundException(String message) {
+    super(message);
+  }
 }
