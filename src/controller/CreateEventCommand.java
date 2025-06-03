@@ -3,19 +3,18 @@
 
 package controller;
 
-import model.ICalendar;
-import model.IEvent;
-import model.IEventSeries;
-import model.EventStatus;
+import model.*;
 import view.IView;
 import exceptions.CommandExecutionException;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 /**
  * Represents a command to create a calendar event or recurring event series.
+ * Uses builder classes to construct events and event series.
  */
 public class CreateEventCommand implements ICommand {
 
@@ -33,14 +32,14 @@ public class CreateEventCommand implements ICommand {
    * Constructs a command to create either a single event or a recurring series.
    *
    * @param subject     the event subject
-   * @param start       the start date/time
-   * @param end         the end date/time (nullable for all-day)
+   * @param start       the start time
+   * @param end         the end time
    * @param description optional description
    * @param location    optional location
    * @param status      public or private status
-   * @param repeatDays  list of weekday chars (M, T, W...), null or empty if non-recurring
-   * @param repeatCount how many times to repeat (nullable)
-   * @param repeatUntil until what date to repeat (nullable)
+   * @param repeatDays  days of week to repeat on (null/empty if not recurring)
+   * @param repeatCount number of times to repeat (nullable)
+   * @param repeatUntil date to stop repeating (nullable)
    */
   public CreateEventCommand(String subject,
                             LocalDateTime start,
@@ -66,22 +65,50 @@ public class CreateEventCommand implements ICommand {
    * Executes the creation command on the given calendar model.
    *
    * @param calendar the calendar model
-   * @param view     the view used to output success or error messages
-   * @throws CommandExecutionException if execution fails (e.g., due to duplicate event)
+   * @param view     the view to display messages
+   * @throws CommandExecutionException if the event cannot be created
    */
   @Override
   public void execute(ICalendar calendar, IView view) throws CommandExecutionException {
-    // TODO: if repeatDays is empty/null, create single event and add to model
-    // TODO: otherwise, create series and add to model
-    // TODO: report success/failure to the view
+    try {
+      if (repeatDays == null || repeatDays.isEmpty()) {
+        IEvent event = new CalendarEventBuilder()
+                .setSubject(subject)
+                .setStart(start)
+                .setEnd(end)
+                .setDescription(description)
+                .setLocation(location)
+                .setStatus(status)
+                .build();
+        calendar.addEvent(event);
+        view.renderMessage("Event created: " + subject);
+      } else {
+        IEventSeries series = new CalendarEventSeriesBuilder()
+                .setSubject(subject)
+                .setStart(start)
+                .setEnd(end)
+                .setDescription(description)
+                .setLocation(location)
+                .setStatus(status)
+                .setRepeatDays(repeatDays)
+                .setRepeatCount(repeatCount)
+                .setRepeatUntil(repeatUntil)
+                .build();
+        calendar.addEventSeries(series);
+        view.renderMessage("Recurring event series created: " + subject);
+      }
+    } catch (Exception e) {
+      throw new CommandExecutionException("Failed to create event: " + e.getMessage(), e);
+    }
   }
 
   /**
-   * Optional: returns a string representation of the command.
+   * Returns a short description of what this command will do.
+   *
+   * @return string representation
    */
   @Override
   public String toString() {
-    // TODO: return a short description of what this command will do
     return "CreateEventCommand{" + subject + "}";
   }
 }

@@ -7,8 +7,11 @@ import model.ICalendar;
 import view.IView;
 import exceptions.CommandExecutionException;
 
+import java.io.IOException;
+
 /**
  * Represents a command to exit the calendar application.
+ * In headless mode, it signals the controller to finish processing commands.
  */
 public class ExitCommand implements ICommand {
 
@@ -29,11 +32,17 @@ public class ExitCommand implements ICommand {
    */
   @Override
   public void execute(ICalendar calendar, IView view) throws CommandExecutionException {
-    // TODO: render a message and signal to the controller that the app should terminate
+    try {
+      view.renderMessage("Exiting calendar application. Goodbye!");
+    } catch (IOException e) {
+      throw new CommandExecutionException("Failed to render exit message", e);
+    }
   }
 
   /**
    * Returns a string representation of the command.
+   *
+   * @return string summary
    */
   @Override
   public String toString() {

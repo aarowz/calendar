@@ -29,6 +29,4 @@ public class CalendarEventSeries implements IEventSeries {
   public UUID getSeriesId() {
     return null;
   }
-
-
 }

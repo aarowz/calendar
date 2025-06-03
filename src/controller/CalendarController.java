@@ -8,10 +8,13 @@ import view.IView;
 import exceptions.*;
 
 import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.io.IOException;
 import java.util.Scanner;
 
 /**
  * Controls the interaction between user input, the calendar model, and the view.
+ * Supports both interactive and headless execution modes.
  */
 public class CalendarController {
   private final ICalendar model;
@@ -33,21 +36,32 @@ public class CalendarController {
 
   /**
    * Starts the controller loop that reads and processes user commands.
+   * Continues until an "exit" command is issued or input ends.
    */
   public void run() {
-    // TODO: implement main loop that reads input, parses commands, and executes them
+    while (input.hasNextLine()) {
+      String line = input.nextLine().trim();
+      if (line.isEmpty()) {
+        continue;
+      }
+      try {
+        ICommand command = parseCommand(line);
+        executeCommand(command);
+      } catch (InvalidCommandException e) {
+        renderError("Invalid command: " + e.getMessage());
+      }
+    }
   }
 
   /**
-   * Parses a line of input into an ICommand.
+   * Parses a line of input into an ICommand using the CommandParser.
    *
    * @param line the user input line
    * @return a parsed ICommand
    * @throws InvalidCommandException if the command is malformed
    */
   private ICommand parseCommand(String line) throws InvalidCommandException {
-    // TODO: delegate to CommandParser.parse(line)
-    return null;
+    return CommandParser.parse(line);
   }
 
   /**
@@ -56,7 +70,11 @@ public class CalendarController {
    * @param command the command to execute
    */
   private void executeCommand(ICommand command) {
-    // TODO: execute the command and handle CommandExecutionException
+    try {
+      command.execute(model, view);
+    } catch (CommandExecutionException e) {
+      renderError("Command failed: " + e.getMessage());
+    }
   }
 
   /**
@@ -65,7 +83,11 @@ public class CalendarController {
    * @param message the message to display
    */
   private void renderError(String message) {
-    // TODO: render the message using the view
+    try {
+      view.renderMessage("[ERROR] " + message);
+    } catch (IOException e) {
+      throw new UncheckedIOException("View failed to render error message", e);
+    }
   }
 
   /**
@@ -74,6 +96,10 @@ public class CalendarController {
    * @param message the message to display
    */
   private void renderMessage(String message) {
-    // TODO: render the message using the view
+    try {
+      view.renderMessage(message);
+    } catch (IOException e) {
+      throw new UncheckedIOException("View failed to render message", e);
+    }
   }
 }

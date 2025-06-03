@@ -3,32 +3,33 @@
 
 package view;
 
-import java.io.PrintStream;
+import java.io.IOException;
 
 /**
- * A simple console-based implementation of the IView interface.
- * Renders messages to the user via a PrintStream (e.g., System.out).
+ * A simple implementation of IView that writes messages to an Appendable output.
+ * This class is compatible with ConsoleViewBuilder for flexible construction.
  */
 public class ConsoleView implements IView {
 
-  private final PrintStream out;
+  private final Appendable out;
 
   /**
-   * Constructs a ConsoleView that writes to the given PrintStream.
+   * Constructs a ConsoleView with the specified output target.
    *
-   * @param out the output stream to write messages to
+   * @param out the output destination (e.g., System.out, PrintWriter, etc.)
    */
-  public ConsoleView(PrintStream out) {
+  public ConsoleView(Appendable out) {
     this.out = out;
   }
 
   /**
-   * Renders a message to the output stream.
+   * Renders a plain text message to the configured output destination.
    *
-   * @param message the message to display
+   * @param message the message to render
+   * @throws IOException if writing fails
    */
   @Override
-  public void render(String message) {
-    // TODO: write the message to the output stream
+  public void renderMessage(String message) throws IOException {
+    out.append(message).append(System.lineSeparator());
   }
 }

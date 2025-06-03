@@ -1,17 +1,15 @@
-// Dreshta Boghra & Aaron Zhou
-// CS3500 HW4
-
 package controller;
 
-import model.ICalendar;
-import model.EventStatus;
+import model.*;
 import view.IView;
 import exceptions.CommandExecutionException;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 /**
  * Represents a command to edit a calendar event.
+ * This command uses a builder to create the updated event, preserving immutability.
  */
 public class EditEventCommand implements ICommand {
 
@@ -26,16 +24,17 @@ public class EditEventCommand implements ICommand {
   private final EventStatus newStatus;
 
   /**
-   * Constructs an edit command with fields to modify an existing event.
+   * Constructs an EditEventCommand with new values to overwrite the original event.
+   * Any value may be null, indicating that the original value should be kept.
    *
-   * @param originalSubject the subject of the event to be edited
-   * @param originalStart   the original start time of the event to be edited
-   * @param newSubject      the new subject (nullable to keep unchanged)
-   * @param newStart        the new start time (nullable to keep unchanged)
-   * @param newEnd          the new end time (nullable to keep unchanged or all-day)
-   * @param newDescription  the new description (nullable to keep unchanged)
-   * @param newLocation     the new location (nullable to keep unchanged)
-   * @param newStatus       the new status (nullable to keep unchanged)
+   * @param originalSubject the original event subject
+   * @param originalStart   the original event start time
+   * @param newSubject      new subject (nullable)
+   * @param newStart        new start time (nullable)
+   * @param newEnd          new end time (nullable)
+   * @param newDescription  new description (nullable)
+   * @param newLocation     new location (nullable)
+   * @param newStatus       new status (nullable)
    */
   public EditEventCommand(String originalSubject,
                           LocalDateTime originalStart,
@@ -56,22 +55,50 @@ public class EditEventCommand implements ICommand {
   }
 
   /**
-   * Executes the edit operation on the calendar.
+   * Executes this command by finding the target event and replacing it with an updated version.
    *
    * @param calendar the calendar model
-   * @param view     the output view
-   * @throws CommandExecutionException if the event cannot be found or the edit fails
+   * @param view     the view for output messages
+   * @throws CommandExecutionException if the event could not be edited
    */
   @Override
   public void execute(ICalendar calendar, IView view) throws CommandExecutionException {
-    // TODO: locate the original event using originalSubject and originalStart
-    // TODO: validate and apply changes to the found event
-    // TODO: replace the old event with the edited one in the model
-    // TODO: show success or failure message using the view
+    try {
+      IEvent original = calendar.findEvent(originalSubject, originalStart);
+      if (original == null) {
+        throw new CommandExecutionException("Original event not found.");
+      }
+
+      String updatedSubject = newSubject != null ? newSubject : original.getSubject();
+      LocalDateTime updatedStart = newStart != null ? newStart : original.getStart();
+      LocalDateTime updatedEnd = newEnd != null ? newEnd : original.getEnd();
+      String updatedDesc = newDescription != null ? newDescription : original.getDescription();
+      String originalLocationStr = original.getLocation() == null ? null : original.getLocation().toString();
+      String updatedLocation = newLocation != null ? newLocation : originalLocationStr;
+      EventStatus updatedStatus = newStatus != null ? newStatus : original.getStatus();
+
+      IEvent updated = new CalendarEventBuilder()
+              .setSubject(updatedSubject)
+              .setStart(updatedStart)
+              .setEnd(updatedEnd)
+              .setDescription(updatedDesc)
+              .setLocation(updatedLocation)
+              .setStatus(updatedStatus)
+              .build();
+
+      calendar.removeEvent(original);
+      calendar.addEvent(updated);
+
+      view.renderMessage("Event edited: " + updatedSubject);
+    } catch (Exception e) {
+      throw new CommandExecutionException("Failed to edit event: " + e.getMessage(), e);
+    }
   }
 
   /**
-   * Optional: returns a string representation of the command.
+   * Returns a string summary of the edit command.
+   *
+   * @return description string
    */
   @Override
   public String toString() {

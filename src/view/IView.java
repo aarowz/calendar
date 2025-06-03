@@ -3,16 +3,20 @@
 
 package view;
 
+import java.io.IOException;
+
 /**
- * Represents a generic view for rendering output messages in a calendar application.
- * This interface allows for flexibility between console, GUI, and test views.
+ * Represents a generic view interface that outputs messages to a user.
+ * Implementations should handle formatting and displaying information
+ * from the calendar controller.
  */
 public interface IView {
 
   /**
-   * Renders the given message to the user.
+   * Renders the given message to the output target.
    *
    * @param message the message to display
+   * @throws IOException if output fails
    */
-  void render(String message);
+  void renderMessage(String message) throws IOException;
 }

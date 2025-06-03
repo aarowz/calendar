@@ -10,6 +10,8 @@ import exceptions.CommandExecutionException;
 /**
  * Represents a generic command that can be executed on a calendar model.
  * All specific commands (create, edit, query, exit) must implement this interface.
+ * Commands encapsulate specific user actions and must support interaction with both
+ * the model and view layers.
  */
 public interface ICommand {
 

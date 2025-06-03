@@ -8,11 +8,13 @@ import model.IEvent;
 import view.IView;
 import exceptions.CommandExecutionException;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
 /**
  * Represents a command to query and display events on a specific date.
+ * Delegates querying to the model and output to the view.
  */
 public class QueryEventsCommand implements ICommand {
 
@@ -32,17 +34,34 @@ public class QueryEventsCommand implements ICommand {
    * and displaying them using the view.
    *
    * @param calendar the calendar model
-   * @param view     the output view
+   * @param view     the output view to display results
    * @throws CommandExecutionException if the query fails
    */
   @Override
   public void execute(ICalendar calendar, IView view) throws CommandExecutionException {
-    // TODO: retrieve events from the model for the given date
-    // TODO: format and render those events using the view
+    try {
+      List<IEvent> events = calendar.getEventsOn(queryDate);
+      if (events.isEmpty()) {
+        view.renderMessage("No events found on " + queryDate);
+      } else {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Events on ").append(queryDate).append(":\n");
+        for (IEvent event : events) {
+          sb.append("- ").append(event.toString()).append("\n");
+        }
+        view.renderMessage(sb.toString());
+      }
+    } catch (IOException e) {
+      throw new CommandExecutionException("Failed to render query results", e);
+    } catch (Exception e) {
+      throw new CommandExecutionException("Failed to query events: " + e.getMessage(), e);
+    }
   }
 
   /**
    * Returns a string representation of the command.
+   *
+   * @return a description of the query command
    */
   @Override
   public String toString() {
