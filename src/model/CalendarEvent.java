@@ -140,6 +140,5 @@ public class CalendarEvent implements IEvent {
 
       return new CalendarEvent(this);
     }
-
   }
 }
