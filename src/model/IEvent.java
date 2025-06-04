@@ -23,12 +23,14 @@ public interface IEvent {
    * Edits a single event.
    */
   IEvent editEvent();
+  //if the edit is on an event in a series, we only pull it out of the series if we change the start time
 
   /**
    * Changes the property of the given event (irrespective of whether it is single or part of a
    * series).
    */
   List<IEvent> editEvents();
+  //this will also move the edited events to a new series and remove them from the old one, check this one
 
   /**
    * Identifies the event that has the given subject and starts at the given date and time and
@@ -37,4 +39,5 @@ public interface IEvent {
    * is not part of a series then this has the same effect as the command above.
    */
   List<IEventSeries> editSeries();
+  //this just edits the whole series
 }
