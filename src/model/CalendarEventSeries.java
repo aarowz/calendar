@@ -16,6 +16,7 @@ public class CalendarEventSeries implements IEventSeries {
   CalendarEvent baseEvent;   // shared subject, startTime, etc.
   RecurrenceRule rule;
   List<IEvent> occurrences;  // optional: generate lazily or cache
+  UUID seriesId;
 
   @Override
   public List<IEvent> getAllOccurrences() {
@@ -26,7 +27,6 @@ public class CalendarEventSeries implements IEventSeries {
   public UUID getSeriesId() {
     return null;
   }
-
 
 
 }

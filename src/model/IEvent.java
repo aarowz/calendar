@@ -40,4 +40,10 @@ public interface IEvent {
    */
   List<IEventSeries> editSeries();
   //this just edits the whole series
+
+  /**
+   * Edits the corresponding fields of the Calendar.
+   */
+  CalendarEvent editCalendar(String subject, LocalDateTime start, LocalDateTime end,
+                             String description, EventStatus status, String location);
 }

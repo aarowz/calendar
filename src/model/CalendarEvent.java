@@ -6,6 +6,8 @@
 package model;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Immutable implementation of a calendar event.
@@ -22,6 +24,7 @@ public class CalendarEvent implements IEvent {
   private final String description;
   private final EventStatus status;
   private final String location;
+  private final UUID seriesId;
 
   private CalendarEvent(Builder builder) {
     this.subject = builder.subject;
@@ -30,16 +33,18 @@ public class CalendarEvent implements IEvent {
     this.description = builder.description;
     this.status = builder.status;
     this.location = builder.location;
+    this.seriesId = builder.seriesId;
   }
 
   private CalendarEvent(String subject, LocalDateTime start, LocalDateTime end,
-                        String description, EventStatus status, String location) {
+                        String description, EventStatus status, String location, UUID seriesId) {
     this.subject = subject;
     this.start = start;
     this.end = end;
     this.description = description;
     this.status = status;
     this.location = location;
+    this.seriesId = seriesId;
   }
 
   /**
@@ -48,13 +53,28 @@ public class CalendarEvent implements IEvent {
   public CalendarEvent editCalendar(String subject, LocalDateTime start, LocalDateTime end,
                                     String description, EventStatus status, String location) {
     return new CalendarEvent(this.subject, this.start, this.end, this.description,
-            this.status, this.location);
+            this.status, this.location, this.seriesId);
   }
 
   //finish this method
   @Override
   public boolean overlapsWith(IEvent other) {
     return false;
+  }
+
+  @Override
+  public IEvent editEvent() {
+    return null;
+  }
+
+  @Override
+  public List<IEvent> editEvents() {
+    return null;
+  }
+
+  @Override
+  public List<IEventSeries> editSeries() {
+    return null;
   }
 
   public static class Builder {
@@ -64,6 +84,7 @@ public class CalendarEvent implements IEvent {
     private String description;
     private EventStatus status;
     private String location;
+    private UUID seriesId;
 
     /**
      * Required: subject
@@ -113,6 +134,14 @@ public class CalendarEvent implements IEvent {
       return this;
     }
 
+    /**
+     * Will set an ID if an event is a pert of series.
+     */
+    public Builder seriesId(UUID seriesId) {
+      this.seriesId = seriesId;
+      return this;
+    }
+
     // 3) The build() method checks any invariants you want, then calls Person's private constructor
     public CalendarEvent build() {
       if (subject == null || start == null) {
@@ -133,7 +162,9 @@ public class CalendarEvent implements IEvent {
       if (status == null) {
         status = EventStatus.PUBLIC;
       }
-
+      if (seriesId == null) {
+        seriesId = new UUID(0L, 0L);
+      }
       return new CalendarEvent(this);
     }
   }

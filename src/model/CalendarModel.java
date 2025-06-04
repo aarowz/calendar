@@ -14,7 +14,6 @@ import java.util.List;
  */
 public class CalendarModel implements ICalendar {
   List<IEvent> events;//events and series cannot overlap
-  List<IEventSeries> series;
 
   @Override
   public void addEvent(IEvent event) throws IllegalArgumentException {
