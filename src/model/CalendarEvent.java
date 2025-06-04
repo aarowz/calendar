@@ -1,6 +1,8 @@
 // Dreshta Boghra & Aaron Zhou
 // CS3500 HW4
 
+//add a series id to this and leave it null or empty if its not in a series but in the eventSeries class, we set this field once it gets added to a series
+
 package model;
 
 import java.time.LocalDateTime;
