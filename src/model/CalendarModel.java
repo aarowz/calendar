@@ -6,6 +6,7 @@ package model;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Implementation of the ICalendar interface.
@@ -27,7 +28,7 @@ public class CalendarModel implements ICalendar {
 
   @Override
   public void createEvent(IEvent event) throws IllegalArgumentException {
-    
+
   }
 
   @Override
@@ -56,4 +57,9 @@ public class CalendarModel implements ICalendar {
     return false;
   }
   // optional — or generate events on series creation and store all as IEvent
+
+  @Override
+  public boolean isDuplicate(IEvent event) {
+    return false;
+  }
 }

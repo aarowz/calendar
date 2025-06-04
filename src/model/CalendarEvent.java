@@ -47,15 +47,6 @@ public class CalendarEvent implements IEvent {
     this.seriesId = seriesId;
   }
 
-  /**
-   * Edits the corresponding fields of the Calendar.
-   */
-  public CalendarEvent editCalendar(String subject, LocalDateTime start, LocalDateTime end,
-                                    String description, EventStatus status, String location) {
-    return new CalendarEvent(this.subject, this.start, this.end, this.description,
-            this.status, this.location, this.seriesId);
-  }
-
   //finish this method
   @Override
   public boolean overlapsWith(IEvent other) {

@@ -1,6 +1,9 @@
 // Dreshta Boghra & Aaron Zhou
 // CS3500 HW4
 
+// Dreshta Boghra & Aaron Zhou
+// CS3500 HW4
+
 package controller;
 
 import exceptions.InvalidCommandException;
@@ -16,90 +19,123 @@ import static org.junit.Assert.*;
 public class CommandParserTest {
 
   /**
-   * Verifies that a valid create-event command is parsed into a CreateEventCommand object.
+   * Tests parsing a standard create-event command with date/time range.
    */
   @Test
-  public void testParseCreateCommandValid() throws InvalidCommandException {
-    String input = "create-event 2025-06-10T14:00 Midterm Review";
-    ICommand cmd = CommandParser.parse(input);
+  public void testParseCreateEvent() throws InvalidCommandException {
+    ICommand cmd = CommandParser.parse("create event \"Team Meeting\" from 2025-06-10T14:00 to 2025-06-10T15:00");
     assertTrue(cmd instanceof CreateEventCommand);
   }
 
   /**
-   * Verifies that a valid edit-event command is parsed into an EditEventCommand object.
+   * Tests parsing a create-event command for an all-day event.
    */
   @Test
-  public void testParseEditCommandValid() throws InvalidCommandException {
-    String input = "edit-event 2025-06-10T14:00 Updated Title 2025-06-10T15:00";
-    ICommand cmd = CommandParser.parse(input);
+  public void testParseCreateAllDayEvent() throws InvalidCommandException {
+    ICommand cmd = CommandParser.parse("create event \"Hackathon\" on 2025-06-15");
+    assertTrue(cmd instanceof CreateEventCommand);
+  }
+
+  /**
+   * Tests parsing a command to edit a single calendar event.
+   */
+  @Test
+  public void testParseEditEvent() throws InvalidCommandException {
+    ICommand cmd = CommandParser.parse("edit event subject \"Team Meeting\" from 2025-06-10T14:00 to 2025-06-10T15:00 with \"Project Sync\"");
     assertTrue(cmd instanceof EditEventCommand);
   }
 
   /**
-   * Verifies that a valid query-events command is parsed into a QueryEventsCommand object.
+   * Tests parsing a command to edit future events in a series starting from a given date.
    */
   @Test
-  public void testParseQueryCommandValid() throws InvalidCommandException {
-    String input = "query-events 2025-06-01T00:00 2025-06-30T23:59";
-    ICommand cmd = CommandParser.parse(input);
+  public void testParseEditEvents() throws InvalidCommandException {
+    ICommand cmd = CommandParser.parse("edit events location \"Yoga\" from 2025-06-01T08:00 with \"Gym\"");
+    assertTrue(cmd instanceof EditEventsCommand);
+  }
+
+  /**
+   * Tests parsing a command to edit all events in a series.
+   */
+  @Test
+  public void testParseEditSeries() throws InvalidCommandException {
+    ICommand cmd = CommandParser.parse("edit series status \"Yoga\" from 2025-06-01T08:00 with \"private\"");
+    assertTrue(cmd instanceof EditSeriesCommand);
+  }
+
+  /**
+   * Tests parsing a command to query events scheduled on a specific date.
+   */
+  @Test
+  public void testParseQueryEventsOn() throws InvalidCommandException {
+    ICommand cmd = CommandParser.parse("print events on 2025-06-01");
     assertTrue(cmd instanceof QueryEventsCommand);
   }
 
   /**
-   * Verifies that the 'exit' command is parsed into an ExitCommand object.
+   * Tests parsing a command to query events within a date/time range.
    */
   @Test
-  public void testParseExitCommandValid() throws InvalidCommandException {
-    String input = "exit";
-    ICommand cmd = CommandParser.parse(input);
+  public void testParseQueryEventsInRange() throws InvalidCommandException {
+    ICommand cmd = CommandParser.parse("print events from 2025-06-01T00:00 to 2025-06-07T23:59");
+    assertTrue(cmd instanceof QueryEventsCommand);
+  }
+
+  /**
+   * Tests parsing a command to show user availability at a specific time.
+   */
+  @Test
+  public void testParseShowStatus() throws InvalidCommandException {
+    ICommand cmd = CommandParser.parse("show status on 2025-06-01T12:00");
+    assertTrue(cmd instanceof QueryEventsCommand);
+  }
+
+  /**
+   * Tests parsing the exit command.
+   */
+  @Test
+  public void testParseExit() throws InvalidCommandException {
+    ICommand cmd = CommandParser.parse("exit");
     assertTrue(cmd instanceof ExitCommand);
   }
 
   /**
-   * Verifies that an unrecognized command results in an InvalidCommandException.
+   * Tests that a command missing necessary fields throws an exception.
    */
   @Test(expected = InvalidCommandException.class)
-  public void testParseUnknownCommandThrows() throws InvalidCommandException {
-    CommandParser.parse("dance-party 2025-06-10T20:00");
+  public void testParseInvalidCommand_MissingFields() throws InvalidCommandException {
+    CommandParser.parse("create event from 2025-06-01T12:00");
   }
 
   /**
-   * Verifies that a create-event command missing a title throws an InvalidCommandException.
+   * Tests that an unknown command keyword throws an exception.
    */
   @Test(expected = InvalidCommandException.class)
-  public void testParseCreateCommandMissingArgs() throws InvalidCommandException {
-    CommandParser.parse("create-event 2025-06-10T14:00"); // Missing title
+  public void testParseUnknownCommand() throws InvalidCommandException {
+    CommandParser.parse("delete event");
   }
 
   /**
-   * Verifies that an edit-event command missing the new time throws an InvalidCommandException.
+   * Tests that a malformed timestamp throws an exception.
    */
   @Test(expected = InvalidCommandException.class)
-  public void testParseEditCommandMissingArgs() throws InvalidCommandException {
-    CommandParser.parse("edit-event 2025-06-10T14:00 Updated Title"); // Missing new time
+  public void testParseMalformedTimestamp() throws InvalidCommandException {
+    CommandParser.parse("create event \"Bad Date\" from 2025-0610T14:00 to 2025-06-10T15:00");
   }
 
   /**
-   * Verifies that a query-events command missing the end time throws an InvalidCommandException.
+   * Tests that an invalid weekday abbreviation throws an exception.
    */
   @Test(expected = InvalidCommandException.class)
-  public void testParseQueryCommandMissingArgs() throws InvalidCommandException {
-    CommandParser.parse("query-events 2025-06-01T00:00"); // Missing end time
+  public void testParseInvalidWeekdays() throws InvalidCommandException {
+    CommandParser.parse("create event \"Lecture\" from 2025-06-01T10:00 to 2025-06-01T11:00 repeats XYZ for 5 times");
   }
 
   /**
-   * Verifies that passing null input throws an InvalidCommandException.
+   * Tests that an empty input string throws an exception.
    */
   @Test(expected = InvalidCommandException.class)
-  public void testParseNullInput() throws InvalidCommandException {
-    CommandParser.parse(null);
-  }
-
-  /**
-   * Verifies that passing an empty string as input throws an InvalidCommandException.
-   */
-  @Test(expected = InvalidCommandException.class)
-  public void testParseEmptyInput() throws InvalidCommandException {
+  public void testParseEmptyCommand() throws InvalidCommandException {
     CommandParser.parse("");
   }
 }

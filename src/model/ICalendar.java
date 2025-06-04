@@ -78,4 +78,13 @@ public interface ICalendar {
    * @param series the given series
    */
   void addEventSeries(IEventSeries series);
+
+  /**
+   * Checks if the event has the same subject start time and end time.
+   *
+   * @param event the given event
+   */
+  boolean isDuplicate(IEvent event);
+  // we're going to check if it's a duplicate by adding this event to the set and seeing if the
+  // size of the set changed
 }
