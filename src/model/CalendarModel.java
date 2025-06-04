@@ -27,7 +27,18 @@ public class CalendarModel implements ICalendar {
   }
 
   @Override
-  public void editEvent(EventProperty prop, String subject, LocalDateTime start, LocalDateTime end, String newValue) throws IllegalArgumentException {
+  public void createEvent(IEvent event) throws IllegalArgumentException {
+    
+  }
+
+  @Override
+  public void createEventSeries(IEventSeries series) throws IllegalArgumentException {
+
+  }
+
+  @Override
+  public void editEvent(String subject, LocalDateTime originalStart, CalendarEvent newEvent)
+          throws IllegalArgumentException {
 
   }
 

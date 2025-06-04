@@ -1,3 +1,6 @@
+// Dreshta Boghra & Aaron Zhou
+// CS3500 HW4
+
 package controller;
 
 import model.*;
@@ -57,40 +60,25 @@ public class EditEventCommand implements ICommand {
   /**
    * Executes this command by finding the target event and replacing it with an updated version.
    *
-   * @param calendar the calendar model
-   * @param view     the view for output messages
+   * @param model the calendar model
+   * @param view  the view for output messages
    * @throws CommandExecutionException if the event could not be edited
    */
   @Override
-  public void execute(ICalendar calendar, IView view) throws CommandExecutionException {
+  public void execute(ICalendar model, IView view) throws CommandExecutionException {
+    // TO ADDRESS LATER: find out why we get an error when using CalendarModel instead of ICalendar
+    // because CalendarModel implements ICalendar
     try {
-      IEvent original = calendar.findEvent(originalSubject, originalStart);
-      if (original == null) {
-        throw new CommandExecutionException("Original event not found.");
-      }
-
-      String updatedSubject = newSubject != null ? newSubject : original.getSubject();
-      LocalDateTime updatedStart = newStart != null ? newStart : original.getStart();
-      LocalDateTime updatedEnd = newEnd != null ? newEnd : original.getEnd();
-      String updatedDesc = newDescription != null ? newDescription : original.getDescription();
-      String originalLocationStr = original.getLocation() == null ? null : original.getLocation().toString();
-      String updatedLocation = newLocation != null ? newLocation : originalLocationStr;
-      EventStatus updatedStatus = newStatus != null ? newStatus : original.getStatus();
-
-      IEvent updated = new CalendarEventBuilder()
-              .setSubject(updatedSubject)
-              .setStart(updatedStart)
-              .setEnd(updatedEnd)
-              .setDescription(updatedDesc)
-              .setLocation(updatedLocation)
-              .setStatus(updatedStatus)
-              .build();
-
-      calendar.removeEvent(original);
-      calendar.addEvent(updated);
-
-      view.renderMessage("Event edited: " + updatedSubject);
-    } catch (Exception e) {
+      model.editEvent(originalSubject, originalStart,
+              new CalendarEvent.Builder()
+                      .subject(newSubject)
+                      .start(newStart)
+                      .end(newEnd)
+                      .description(newDescription)
+                      .location(newLocation)
+                      .status(newStatus)
+                      .build());
+    } catch (IllegalArgumentException e) {
       throw new CommandExecutionException("Failed to edit event: " + e.getMessage(), e);
     }
   }

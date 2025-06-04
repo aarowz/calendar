@@ -19,7 +19,7 @@ public interface ICalendar {
    * @param event to add to the calendar
    * @throws IllegalArgumentException if an event with the same subject, start, and end time already exists
    */
-  void addEvent(IEvent event) throws IllegalArgumentException;
+  void createEvent(IEvent event) throws IllegalArgumentException;
 
   /**
    * Adds a new recurring event series to the calendar.
@@ -27,20 +27,18 @@ public interface ICalendar {
    * @param series the recurring event series to add
    * @throws IllegalArgumentException if any generated event conflicts with an existing event
    */
-  void addEventSeries(IEventSeries series) throws IllegalArgumentException;
+  void createEventSeries(IEventSeries series) throws IllegalArgumentException;
 
   /**
    * Edits the specified property of an existing event.
    *
-   * @param prop      the property to edit (e.g., SUBJECT, START, END)
-   * @param subject   the subject of the event to identify it
-   * @param start     the original start time of the event
-   * @param end       the original end time of the event
-   * @param newValue  the new value for the specified property
+   * @param subject       the subject of the event to identify it
+   * @param originalStart the original start time of the event
+   * @param newEvent      the new value for the specified property
    * @throws IllegalArgumentException if no matching event is found with the given details
    */
-  void editEvent(EventProperty prop, String subject, LocalDateTime start,
-                 LocalDateTime end, String newValue) throws IllegalArgumentException;
+  void editEvent(String subject, LocalDateTime originalStart, CalendarEvent newEvent)
+          throws IllegalArgumentException;
 
   /**
    * Retrieves all events scheduled on a specific date.
@@ -66,4 +64,18 @@ public interface ICalendar {
    * @return true if there is at least one event overlapping the given time, false otherwise
    */
   boolean isBusyAt(LocalDateTime time);
+
+  /**
+   * Adds the given event to this calendar.
+   *
+   * @param event the given event
+   */
+  void addEvent(IEvent event);
+
+  /**
+   * Adds the given event series to this calendar.
+   *
+   * @param series the given series
+   */
+  void addEventSeries(IEventSeries series);
 }

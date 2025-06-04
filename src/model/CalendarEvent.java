@@ -30,28 +30,23 @@ public class CalendarEvent implements IEvent {
     this.location = builder.location;
   }
 
-  public String getSubject() {
-    return subject;
+  private CalendarEvent(String subject, LocalDateTime start, LocalDateTime end,
+                        String description, EventStatus status, String location) {
+    this.subject = subject;
+    this.start = start;
+    this.end = end;
+    this.description = description;
+    this.status = status;
+    this.location = location;
   }
 
-  public LocalDateTime getStart() {
-    return start;
-  }
-
-  public LocalDateTime getEnd() {
-    return end;
-  }
-
-  public String getDescription() {
-    return description;
-  }
-
-  public EventStatus getStatus() {
-    return status;
-  }
-
-  public String getLocation() {
-    return location;
+  /**
+   * Edits the corresponding fields of the Calendar.
+   */
+  public CalendarEvent editCalendar(String subject, LocalDateTime start, LocalDateTime end,
+                                    String description, EventStatus status, String location) {
+    return new CalendarEvent(this.subject, this.start, this.end, this.description,
+            this.status, this.location);
   }
 
   //finish this method
@@ -67,7 +62,6 @@ public class CalendarEvent implements IEvent {
     private String description;
     private EventStatus status;
     private String location;
-
 
     /**
      * Required: subject

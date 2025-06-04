@@ -33,16 +33,21 @@ public class CommandParser {
     }
 
     String commandType = tokens[0].toLowerCase();
-    if (commandType.equals("create-event")) {
-      return parseCreateCommand(tokens);
-    } else if (commandType.equals("edit-event")) {
-      return parseEditCommand(tokens);
-    } else if (commandType.equals("query-events")) {
-      return parseQueryCommand(tokens);
-    } else if (commandType.equals("exit")) {
-      return new ExitCommand();
-    } else {
-      throw new InvalidCommandException("Unknown command: " + tokens[0]);
+    switch (commandType) {
+      case "create event":
+        return parseCreateCommand(tokens);
+      case "edit event":
+        return parseEditCommand(tokens);
+      case "edit events":
+        return parseEditsCommand(tokens);
+      case "edit series":
+        return parseEditSeries(tokens);
+      case "query events":
+        return parseQueryCommand(tokens);
+      case "exit":
+        return new ExitCommand();
+      default:
+        throw new InvalidCommandException("Unknown command: " + tokens[0]);
     }
   }
 
@@ -93,12 +98,14 @@ public class CommandParser {
    */
   private static ICommand parseEditCommand(String[] tokens) throws InvalidCommandException {
     if (tokens.length < 5) {
-      throw new InvalidCommandException("edit-event requires original subject and start time plus at least one new value");
+      throw new InvalidCommandException("edit event requires original subject and start time plus at least one new value");
     }
     try {
+      // take in the subject and original start time
       String originalSubject = tokens[1];
       LocalDateTime originalStart = LocalDateTime.parse(tokens[2]);
 
+      // create new instances of the edited state
       String newSubject = !tokens[3].equals("null") ? tokens[3] : null;
       LocalDateTime newStart = !tokens[4].equals("null") ? LocalDateTime.parse(tokens[4]) : null;
       LocalDateTime newEnd = tokens.length > 5 && !tokens[5].equals("null") ? LocalDateTime.parse(tokens[5]) : null;
@@ -106,12 +113,16 @@ public class CommandParser {
       String newLocation = tokens.length > 7 && !tokens[7].equals("null") ? tokens[7] : null;
       EventStatus newStatus = tokens.length > 8 && !tokens[8].equals("null") ? EventStatus.valueOf(tokens[8].toUpperCase()) : null;
 
+      // return a new single edit with the instances created above
+      // NOTE: the execute() function is called in CalendarController instead of here because
+      // we defined execute as an interface method that applies for six commands
       return new EditEventCommand(
               originalSubject, originalStart,
               newSubject, newStart, newEnd,
               newDescription, newLocation, newStatus);
     } catch (DateTimeParseException | IllegalArgumentException e) {
-      throw new InvalidCommandException("Invalid input format for edit-event: " + e.getMessage());
+      // if the formatting does not match the ones given in instructions, throw an exception
+      throw new InvalidCommandException("Invalid input format for edit event: " + e.getMessage());
     }
   }
 

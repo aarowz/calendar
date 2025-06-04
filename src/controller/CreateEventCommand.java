@@ -70,27 +70,31 @@ public class CreateEventCommand implements ICommand {
    */
   @Override
   public void execute(ICalendar calendar, IView view) throws CommandExecutionException {
+
     try {
+      // if the event isn't a series
       if (repeatDays == null || repeatDays.isEmpty()) {
-        IEvent event = new CalendarEventBuilder()
-                .setSubject(subject)
-                .setStart(start)
-                .setEnd(end)
-                .setDescription(description)
-                .setLocation(location)
-                .setStatus(status)
+        // add the six input default event
+        IEvent event = new CalendarEvent.Builder()
+                .subject(subject)
+                .start(start)
+                .end(end)
+                .description(description)
+                .location(location)
+                .status(status)
                 .build();
         calendar.addEvent(event);
         view.renderMessage("Event created: " + subject);
       } else {
-        IEventSeries series = new CalendarEventSeriesBuilder()
-                .setSubject(subject)
-                .setStart(start)
-                .setEnd(end)
-                .setDescription(description)
-                .setLocation(location)
-                .setStatus(status)
-                .setRepeatDays(repeatDays)
+        // otherwise add the series implementation with additional fields
+        IEventSeries series = new CalendarEventSeries().Builder()
+                .subject(subject)
+                .start(start)
+                .end(end)
+                .description(description)
+                .location(location)
+                .status(status)
+                .setRepeatDays(repeatDays) // fix the next three to match the recurrence rule
                 .setRepeatCount(repeatCount)
                 .setRepeatUntil(repeatUntil)
                 .build();

@@ -33,8 +33,10 @@ public class ExitCommand implements ICommand {
   @Override
   public void execute(ICalendar calendar, IView view) throws CommandExecutionException {
     try {
+      // if the exit command was valid, exit the program
       view.renderMessage("Exiting calendar application. Goodbye!");
     } catch (IOException e) {
+      // otherwise throw an error message
       throw new CommandExecutionException("Failed to render exit message", e);
     }
   }

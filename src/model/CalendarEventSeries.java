@@ -13,12 +13,9 @@ import java.util.UUID;
  * Supports rules such as repeating on weekdays and ending after a count or by a date.
  */
 public class CalendarEventSeries implements IEventSeries {
-  String subject;
-  LocalDateTime start;
-  LocalDateTime end;
-  String longerDescription;
-  String location;
-  EventStatus status;
+  CalendarEvent baseEvent;   // shared subject, startTime, etc.
+  RecurrenceRule rule;
+  List<IEvent> occurrences;  // optional: generate lazily or cache
 
   @Override
   public List<IEvent> getAllOccurrences() {
@@ -29,4 +26,7 @@ public class CalendarEventSeries implements IEventSeries {
   public UUID getSeriesId() {
     return null;
   }
+
+
+
 }

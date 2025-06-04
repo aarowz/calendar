@@ -40,20 +40,32 @@ public class QueryEventsCommand implements ICommand {
   @Override
   public void execute(ICalendar calendar, IView view) throws CommandExecutionException {
     try {
+      // create a list of the events that are on the given query date
       List<IEvent> events = calendar.getEventsOn(queryDate);
+
+      // if there's no events on the given query date
       if (events.isEmpty()) {
         view.renderMessage("No events found on " + queryDate);
       } else {
+        // create a string builder that accumulates the events on the given day
         StringBuilder sb = new StringBuilder();
         sb.append("Events on ").append(queryDate).append(":\n");
+
+        // keep appending for each event
         for (IEvent event : events) {
           sb.append("- ").append(event.toString()).append("\n");
         }
+
+        // render the events (basically display it in the console, and later probably through the
+        // app view itself
         view.renderMessage(sb.toString());
       }
     } catch (IOException e) {
+      // if there is an exception with the IO extensions that we use, indicate the internal error
       throw new CommandExecutionException("Failed to render query results", e);
     } catch (Exception e) {
+      // if there is an exception with the command because the user inputted bogus, indicate the
+      // error
       throw new CommandExecutionException("Failed to query events: " + e.getMessage(), e);
     }
   }
