@@ -6,6 +6,9 @@ package model;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -15,110 +18,144 @@ import java.util.Set;
  * to generate a valid series of CalendarEvent instances.
  */
 public class RecurrenceRule {
-  // ─── Fields (all private and final) ─────────────────────────────────────────────
 
-  private final Set<DayOfWeek> repeatDays;       // EnumSet<DayOfWeek> better than a custom enum
-  private final int count;                        // number of times to repeat (if used)
-  private final LocalDate start;
-  private final LocalDate end;
-  private final List<CalendarEvent> seriesOfEvents;
+  private final Set<DayOfWeek> repeatDays; // the days of the week this repeats on
+  private final int count; // how many times it repeats
+  private final LocalDate start; // start of recurrence window
+  private final LocalDate end; // optional end date
+  private final List<CalendarEvent> seriesOfEvents; // optional: pre-built events list
 
-
-  private final String firstName;
-  private final String lastName;
-  private final int age;
-  private final String address;
-  private final String phoneNumber;
-
-  // ─── Private constructor only called by the Builder ─────────────────────────────
   private RecurrenceRule(Builder builder) {
-
-    this.repeatDays = builder.repeatDays;       // EnumSet<DayOfWeek> better than a custom enum
-    this.count = builder.count;                  // number of times to repeat (if used)
+    this.repeatDays = builder.repeatDays;
+    this.count = builder.count;
     this.start = builder.start;
     this.end = builder.end;
     this.seriesOfEvents = builder.seriesOfEvents;
-
-    this.firstName = builder.firstName;
-    this.lastName = builder.lastName;
-    this.age = builder.age;
-    this.address = builder.address;
-    this.phoneNumber = builder.phoneNumber;
   }
 
-  // ─── Public getters (no setters) ─────────────────────────────────────────────────
+  /**
+   * Returns the days of week this rule repeats on.
+   */
   public Set<DayOfWeek> getRepeatDays() {
     return repeatDays;
   }
 
+  /**
+   * Returns how many times the event should repeat.
+   */
   public int getCount() {
     return count;
   }
 
+  /**
+   * Returns a copy of the starting date of the recurrence window.
+   */
   public LocalDate getStart() {
-    return start;
+    return LocalDate.of(start.getYear(), start.getMonth(), start.getDayOfMonth());
   }
 
+  /**
+   * Returns a copy of the ending date of the recurrence window.
+   */
   public LocalDate getEnd() {
-    return end;
+    // if there is no end date
+    if (end == null) {
+      // return null
+      return null;
+    } else {
+      // otherwise return the end date
+      return LocalDate.of(end.getYear(), end.getMonth(), end.getDayOfMonth());
+    }
   }
 
+  /**
+   * Returns a list of CalendarEvent objects if already generated.
+   */
   public List<CalendarEvent> getSeriesOfEvents() {
     return seriesOfEvents;
   }
 
   /**
-   * Generates the list of start/end times for each event in the series.
+   * Generates a list of start-end LocalDateTime pairs for this recurrence rule.
+   * Assumes all occurrences have the same time component.
    *
-   * @return List of (start, end) pairs as LocalDateTime[]
+   * @return list of start/end date pairs
    */
-  public List<LocalDateTime[]> generateOccurrences() {
-    // Method body to be implemented
-    return null;
+  public List<LocalDateTime[]> generateOccurrences(LocalTime startTime, LocalTime endTime) {
+    // make a new list to hold the generated start-end pairs
+    List<LocalDateTime[]> occurrences = new ArrayList<>();
+
+    // start from the configured start date
+    LocalDate current = start;
+
+    // keep track of how many events we've created
+    int occurrencesCount = 0;
+
+    // keep looping until we've hit the repeat count or gone past the end date
+    while ((count == 0 || occurrencesCount < count) && (end == null || !current.isAfter(end))) {
+      // only create events on the specified days of the week
+      if (repeatDays.contains(current.getDayOfWeek())) {
+        // make a start datetime from the current date and given start time
+        LocalDateTime startDateTime = LocalDateTime.of(current, startTime);
+
+        // make the corresponding end datetime
+        LocalDateTime endDateTime = LocalDateTime.of(current, endTime);
+
+        // add this pair to the results
+        occurrences.add(new LocalDateTime[]{startDateTime, endDateTime});
+
+        // increment how many we've added so far
+        occurrencesCount++;
+      }
+
+      // move to the next calendar day
+      current = current.plusDays(1);
+    }
+
+    // return the full list of recurrence times
+    return occurrences;
   }
 
   /**
-   * Determines whether the recurrence rule allows for an event to occur on the given date.
-   *
-   * @param date the date to check
-   * @return true if an event occurs on the given date, false otherwise
+   * Returns whether an event should occur on the given date.
    */
   public boolean occursOn(LocalDate date) {
-    // Method body to be implemented
-    return false;
+    if (date.isBefore(start)) {
+      return false;
+    }
+    if (end != null && date.isAfter(end)) {
+      return false;
+    }
+    return repeatDays.contains(date.getDayOfWeek());
   }
 
   /**
-   * Computes the total number of valid occurrences defined by this rule.
-   * This is based on the specified {@code count} or the number of dates up to {@code until}.
-   *
-   * @return the number of event occurrences
+   * Computes the number of valid recurrence occurrences.
    */
   public int getOccurrenceCount() {
-    // Method body to be implemented
-    return 0;
+    int count = 0;
+    LocalDate current = start;
+    while ((this.count == 0 || count < this.count) && (end == null || !current.isAfter(end))) {
+      if (repeatDays.contains(current.getDayOfWeek())) {
+        count++;
+      }
+      current = current.plusDays(1);
+    }
+    return count;
   }
 
-  // ─── The Builder ────────────────────────────────────────────────────────────────
+  /**
+   * Builder for creating RecurrenceRule instances.
+   */
   public static class Builder {
-    // 1) match the fields in the outer class (but NOT final here)
-    private Set<DayOfWeek> repeatDays;       // EnumSet<DayOfWeek> better than a custom enum
-    private int count;                        // number of times to repeat (if used)
+    private Set<DayOfWeek> repeatDays = new HashSet<>();
+    private int count = 0;
     private LocalDate start;
     private LocalDate end;
     private List<CalendarEvent> seriesOfEvents;
 
-
-    private String firstName;
-    private String lastName;
-    private int age;
-    private String address;
-    private String phoneNumber;
-
-    // 2) Provide "setter" methods for each field, returning the Builder itself
-
     /**
-     * Required: first name
+     * Sets the repeating weekdays.
      */
     public Builder repeatDays(Set<DayOfWeek> repeatDays) {
       this.repeatDays = repeatDays;
@@ -126,7 +163,7 @@ public class RecurrenceRule {
     }
 
     /**
-     * Required: last name
+     * Sets the repeat count.
      */
     public Builder count(int count) {
       this.count = count;
@@ -134,7 +171,7 @@ public class RecurrenceRule {
     }
 
     /**
-     * Optional: age (default is 0 if not set)
+     * Sets the start date of the recurrence.
      */
     public Builder start(LocalDate start) {
       this.start = start;
@@ -142,7 +179,7 @@ public class RecurrenceRule {
     }
 
     /**
-     * Optional: address (default is null if not set)
+     * Sets the end date of the recurrence.
      */
     public Builder end(LocalDate end) {
       this.end = end;
@@ -150,16 +187,23 @@ public class RecurrenceRule {
     }
 
     /**
-     * Optional: phone number (default is null if not set)
+     * Sets an optional pre-generated series of events.
      */
     public Builder seriesOfEvents(List<CalendarEvent> seriesOfEvents) {
       this.seriesOfEvents = seriesOfEvents;
       return this;
     }
 
-    // 3) The build() method checks any invariants you want, then calls Person's private constructor
+    /**
+     * Builds the RecurrenceRule object after validating required fields.
+     */
     public RecurrenceRule build() {
-      // Example invariant check: first and last name must not be null
+      if (repeatDays == null || repeatDays.isEmpty()) {
+        throw new IllegalArgumentException("Repeat days must be provided");
+      }
+      if (start == null) {
+        throw new IllegalArgumentException("Start date must be provided");
+      }
       return new RecurrenceRule(this);
     }
   }

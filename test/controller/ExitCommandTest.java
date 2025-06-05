@@ -3,35 +3,35 @@
 
 package controller;
 
-import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test class for ExitCommand. Currently stubbed for compilation until model is complete.
+ * Test class for ExitCommand.
+ * Verifies that the command correctly handles program termination.
  */
 public class ExitCommandTest {
 
   /**
-   * Sets up test environment for ExitCommand tests.
+   * Tests that executing the exit command throws a special termination signal.
    */
-  @Before
-  public void setUp() {
-    // Setup logic for ExitCommand tests will go here
+  @Test
+  public void testExecuteTriggersExit() {
+    // TODO: Implement
   }
 
   /**
-   * Tests that the exit command flags the controller to stop.
+   * Verifies that the view does not receive any message after exit.
    */
   @Test
-  public void testExitCommandFlagsExit() {
-    // Stubbed test method
+  public void testNoMessageRenderedOnExit() {
+    // TODO: Implement
   }
 
   /**
-   * Tests that executing exit command does not throw exceptions.
+   * Confirms that the string representation identifies the exit command.
    */
   @Test
-  public void testExitCommandNoException() {
-    // Stubbed test method
+  public void testToStringIdentifiesExitCommand() {
+    // TODO: Implement
   }
 }

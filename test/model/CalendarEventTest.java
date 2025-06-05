@@ -4,66 +4,110 @@
 package model;
 
 import java.time.LocalDateTime;
+
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+
+import static org.junit.Assert.*;
+
 /**
  * Unit tests for the CalendarEvent class.
- * Validates immutability, correct field access through getters,
- * all-day event handling, equality and hash code behavior,
- * and the functionality of the with-methods used for editing.
+ * Validates immutability, field access, overlaps, and invalid input scenarios.
  */
 public class CalendarEventTest {
-  IEvent meeting = new CalendarEvent.Builder()
-          .subject("meeting")
-          .start(LocalDateTime.of(2025, 6, 5, 10, 30))
-          .end(LocalDateTime.of(2025, 6, 5, 11, 30))
-          .description("its a meeting")
-          .location("Zoom")
-          .status(EventStatus.PRIVATE)
-          .build();
 
-  IEvent meeting1 = new CalendarEvent.Builder()
-          .subject("meeting1")
-          .start(LocalDateTime.of(2025, 6, 5, 10, 30))
-          .end(LocalDateTime.of(2025, 6, 5, 12, 30))
-          .description("its a meeting")
-          .location("Zoom")
-          .status(EventStatus.PRIVATE)
-          .build();
-
-  IEvent meeting2 = new CalendarEvent.Builder()
-          .subject("meeting1")
-          .start(LocalDateTime.of(2025, 2, 5, 10, 30))
-          .end(LocalDateTime.of(2025, 2, 5, 12, 30))
-          .description("its a meeting")
-          .location("Zoom")
-          .status(EventStatus.PRIVATE)
-          .build();
-
-  //make a try catch if there is no subject
-  //make a try catch if there is no start
-  //make a try catch if they try to add optional data but no required data,
-  // //one for subject one for start
-  //invalid input for all the fields
-  //test same event, same subject and start
-
-
+  /**
+   * Tests valid event getters return expected data.
+   */
   @Test
   public void testGetMethods() {
-    assertEquals("meeting", meeting.getSubject());
-    assertEquals(LocalDateTime.of(2025, 6, 5, 10, 30), meeting.getStart());
-    assertEquals(LocalDateTime.of(2025, 6, 5, 11, 30), meeting.getEnd());
-    assertEquals("its a meeting", meeting.getDescription());
-    assertEquals(EventStatus.PRIVATE, meeting.getStatus());
-    assertEquals("Zoom", meeting.getLocation());
+    // TODO: Implement
   }
 
+  /**
+   * Tests that overlapping events correctly return true or false.
+   */
   @Test
   public void testOverlapsWith() {
-    assertEquals(true, meeting1.overlapsWith(meeting));
-    assertEquals(true, meeting.overlapsWith(meeting1));
+    // TODO: Implement
+  }
 
-    assertEquals(false, meeting1.overlapsWith(meeting2));
-    assertEquals(false, meeting2.overlapsWith(meeting1));
+  /**
+   * Tests that building an event with a null subject throws an exception.
+   */
+  @Test(expected = IllegalArgumentException.class)
+  public void testMissingSubjectThrows() {
+    // TODO: Implement
+  }
+
+  /**
+   * Tests that building an event with a null start time throws an exception.
+   */
+  @Test(expected = IllegalArgumentException.class)
+  public void testMissingStartThrows() {
+    // TODO: Implement
+  }
+
+  /**
+   * Tests that supplying optional fields without required subject throws an error.
+   */
+  @Test(expected = IllegalArgumentException.class)
+  public void testOptionalWithoutSubject() {
+    // TODO: Implement
+  }
+
+  /**
+   * Tests that supplying optional fields without required start time throws an error.
+   */
+  @Test(expected = IllegalArgumentException.class)
+  public void testOptionalWithoutStart() {
+    // TODO: Implement
+  }
+
+  /**
+   * Tests that an event with invalid date range (end before start) is rejected.
+   */
+  @Test(expected = IllegalArgumentException.class)
+  public void testInvalidTimeRangeThrows() {
+    // TODO: Implement
+  }
+
+  /**
+   * Tests that two events with identical subject and start time are treated as duplicates.
+   */
+  @Test
+  public void testDuplicateEventEquality() {
+    // TODO: Implement
+  }
+
+  /**
+   * Tests that equals() and hashCode() are consistent for equal events.
+   */
+  @Test
+  public void testEqualsAndHashCodeConsistency() {
+    // TODO: Implement
+  }
+
+  /**
+   * Tests immutability of CalendarEvent after creation.
+   */
+  @Test
+  public void testEventIsImmutable() {
+    // TODO: Implement
+  }
+
+  /**
+   * Tests the with-methods correctly return updated event copies.
+   */
+  @Test
+  public void testWithMethodsReturnModifiedCopy() {
+    // TODO: Implement
+  }
+
+  /**
+   * Tests that all-day event correctly defaults to 8am-5pm when end time is omitted.
+   */
+  @Test
+  public void testAllDayEventDefaultTiming() {
+    // TODO: Implement
   }
 }

@@ -3,59 +3,51 @@
 
 package controller;
 
-import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test class for QueryEventsCommand. Currently stubbed for compilation until model is complete.
+ * Test class for QueryEventsCommand.
+ * Ensures correct behavior when querying events based on various criteria.
  */
 public class QueryEventsCommandTest {
 
   /**
-   * Sets up test environment for QueryEventsCommand tests.
-   */
-  @Before
-  public void setUp() {
-    // Setup logic for QueryEventsCommand tests will go here
-  }
-
-  /**
-   * Tests querying events on a specific date.
+   * Tests querying events on a specific day returns expected results.
    */
   @Test
-  public void testQueryEventsOnDate() {
-    // Stubbed test method
+  public void testQueryEventsOnDay() {
+    // TODO: Implement
   }
 
   /**
-   * Tests querying events within a date-time range.
+   * Tests querying events within a date range returns the correct subset.
    */
   @Test
   public void testQueryEventsInRange() {
-    // Stubbed test method
+    // TODO: Implement
   }
 
   /**
-   * Tests querying user status at a specific time.
+   * Tests behavior when the query returns no events.
    */
   @Test
-  public void testShowStatusAtTime() {
-    // Stubbed test method
+  public void testQueryReturnsEmpty() {
+    // TODO: Implement
   }
 
   /**
-   * Tests error handling for invalid query command format.
-   */
-  @Test(expected = IllegalArgumentException.class)
-  public void testInvalidQueryFormat() {
-    // Stubbed test method
-  }
-
-  /**
-   * Tests behavior when no events exist in queried time.
+   * Tests that invalid date input results in appropriate error handling.
    */
   @Test
-  public void testNoEventsInQueriedTime() {
-    // Stubbed test method
+  public void testQueryWithInvalidDate() {
+    // TODO: Implement
+  }
+
+  /**
+   * Verifies that the command renders query results to the view properly.
+   */
+  @Test
+  public void testQueryResultRendering() {
+    // TODO: Implement
   }
 }

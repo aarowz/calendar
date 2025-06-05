@@ -1,90 +1,140 @@
-// Dreshta Boghra & Aaron Zhou
-// CS3500 HW4
-
 package model;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Interface for a calendar model that stores and manages events.
- * Supports adding, querying, editing, and updating both single and recurring events.
+ * This interface defines all allowable operations for interacting with the calendar,
+ * and should be the only model interface exposed to the controller.
+ * <p>
+ * The controller may call methods on this interface but should never have direct
+ * access to any model-level implementation (e.g., IEvent, CalendarEvent, etc.).
  */
 public interface ICalendar {
 
   /**
-   * Adds a new event to the calendar.
+   * Creates and adds a new one-time calendar event.
    *
-   * @param event to add to the calendar
-   * @throws IllegalArgumentException if an event with the same subject, start, and end time already exists
+   * @param subject     the subject or title of the event
+   * @param start       the start time of the event
+   * @param end         the end time of the event
+   * @param description a description of the event
+   * @param status      visibility status of the event (e.g. PUBLIC or PRIVATE)
+   * @param location    the location where the event takes place
+   * @throws IllegalArgumentException if an event with the same subject, start, and end already exists
    */
-  void createEvent(IEvent event) throws IllegalArgumentException;
+  void createEvent(String subject, LocalDateTime start, LocalDateTime end,
+                   String description, EventStatus status, String location);
 
   /**
-   * Adds a new recurring event series to the calendar.
-   *
-   * @param series the recurring event series to add
-   * @throws IllegalArgumentException if any generated event conflicts with an existing event
-   */
-  void createEventSeries(IEventSeries series) throws IllegalArgumentException;
+
+   Creates and adds a new recurring event series to the calendar.*,
+   @param subject       the subject/title of the event,
+   @param description   a short description of the event,
+   @param location      where the event takes place,
+   @param status        visibility status (PUBLIC or PRIVATE),
+   @param startDate     the first date of the recurrence window,
+   @param endDate       the optional end date of the recurrence window (null if not used),
+   @param startTime     the time of day each event starts,
+   @param endTime       the time of day each event ends,
+   @param repeatDays    the days of the week to repeat the event on,
+   @param count         how many events to create (0 = unlimited within window),
+   @throws IllegalArgumentException if any event overlaps with an existing event*/,
+
+  void createEventSeries(String subject, String description, String location, EventStatus status,
+                         LocalDate startDate, LocalDate endDate,
+                         java.time.LocalTime startTime, java.time.LocalTime endTime,
+                         Set<DayOfWeek> repeatDays, int count);
 
   /**
-   * Edits the specified property of an existing event.
+   * Edits a single calendar event with a matching subject and start time.
    *
-   * @param subject       the subject of the event to identify it
-   * @param originalStart the original start time of the event
-   * @param newEvent      the new value for the specified property
-   * @throws IllegalArgumentException if no matching event is found with the given details
+   * @param subject        the subject of the original event
+   * @param originalStart  the original start time of the event
+   * @param newSubject     the updated subject
+   * @param newStart       the new start time
+   * @param newEnd         the new end time
+   * @param newDescription the new description
+   * @param newStatus      the new visibility status
+   * @param newLocation    the new location
+   * @throws IllegalArgumentException if no matching event is found
    */
-  void editEvent(String subject, LocalDateTime originalStart, CalendarEvent newEvent)
-          throws IllegalArgumentException;
+  void editEvent(String subject, LocalDateTime originalStart,
+                 String newSubject, LocalDateTime newStart, LocalDateTime newEnd,
+                 String newDescription, EventStatus newStatus, String newLocation);
 
   /**
-   * Retrieves all events scheduled on a specific date.
+   * Edits all events that match the given subject and start time, pulling them out of their
+   * series (if applicable) and assigning them to a new series.
    *
-   * @param date the date to search
-   * @return a list of events occurring on that date
+   * @param subject        the subject of the events to edit
+   * @param originalStart  the original start time of the event to identify the group
+   * @param newSubject     the updated subject
+   * @param newStart       the new start time
+   * @param newEnd         the new end time
+   * @param newDescription the new description
+   * @param newStatus      the new visibility status
+   * @param newLocation    the new location
+   * @throws IllegalArgumentException if no matching events are found
    */
-  List<IEvent> getEventsOn(LocalDate date);
+  void editEvents(String subject, LocalDateTime originalStart,
+                  String newSubject, LocalDateTime newStart, LocalDateTime newEnd,
+                  String newDescription, EventStatus newStatus, String newLocation);
 
   /**
-   * Retrieves all events scheduled within a given time range.
+   * Edits all events in a series starting from the given start time forward.
    *
-   * @param from the start of the time range (inclusive)
-   * @param to   the end of the time range (inclusive)
-   * @return a list of events within the specified interval
+   * @param subject        the subject of the series
+   * @param originalStart  the starting point in time to begin editing
+   * @param newSubject     the updated subject
+   * @param newStart       the new start time
+   * @param newEnd         the new end time
+   * @param newDescription the new description
+   * @param newStatus      the new visibility status
+   * @param newLocation    the new location
+   * @throws IllegalArgumentException if no matching series or events are found
    */
-  List<IEvent> getEventsBetween(LocalDateTime from, LocalDateTime to);
+  void editEventSeries(String subject, LocalDateTime originalStart,
+                       String newSubject, LocalDateTime newStart, LocalDateTime newEnd,
+                       String newDescription, EventStatus newStatus, String newLocation);
 
   /**
-   * Checks whether the calendar is busy at the given date and time.
+   * Retrieves all events occurring on a specific calendar day.
    *
-   * @param time the date and time to check
-   * @return true if there is at least one event overlapping the given time, false otherwise
+   * @param date the date to query
+   * @return a list of read-only representations of the events on that date
+   */
+  List<ROIEvent> getEventsOn(LocalDate date);
+
+  /**
+   * Retrieves all events occurring between the given start and end times.
+   *
+   * @param from the start of the interval (inclusive)
+   * @param to   the end of the interval (inclusive)
+   * @return a list of read-only representations of the events in the range
+   */
+  List<ROIEvent> getEventsBetween(LocalDateTime from, LocalDateTime to);
+
+  /**
+   * Returns true if at least one event is occurring at the given moment.
+   *
+   * @param time the moment to check
+   * @return true if the calendar has any overlapping event at this time, false otherwise
    */
   boolean isBusyAt(LocalDateTime time);
 
   /**
-   * Adds the given event to this calendar.
+   * Checks if the given event (defined by subject, start, and end) would be a duplicate.
+   * A duplicate is an event that has the same subject, start, and end time as an existing one.
    *
-   * @param event the given event
+   * @param subject the subject of the event to check
+   * @param start   the start time of the event
+   * @param end     the end time of the event
+   * @return true if the event would be a duplicate, false otherwise
    */
-  void addEvent(IEvent event);
-
-  /**
-   * Adds the given event series to this calendar.
-   *
-   * @param series the given series
-   */
-  void addEventSeries(IEventSeries series);
-
-  /**
-   * Checks if the event has the same subject start time and end time.
-   *
-   * @param event the given event
-   */
-  boolean isDuplicate(IEvent event);
-  // we're going to check if it's a duplicate by adding this event to the set and seeing if the
-  // size of the set changed
+  boolean isDuplicate(String subject, LocalDateTime start, LocalDateTime end);
 }

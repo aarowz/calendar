@@ -18,6 +18,7 @@ import java.util.List;
  */
 public class CreateEventCommand implements ICommand {
 
+  // fields for all event details
   private final String subject;
   private final LocalDateTime start;
   private final LocalDateTime end;
@@ -50,6 +51,7 @@ public class CreateEventCommand implements ICommand {
                             List<Character> repeatDays,
                             Integer repeatCount,
                             LocalDate repeatUntil) {
+    // initialize all fields
     this.subject = subject;
     this.start = start;
     this.end = end;
@@ -70,38 +72,46 @@ public class CreateEventCommand implements ICommand {
    */
   @Override
   public void execute(ICalendar calendar, IView view) throws CommandExecutionException {
-
     try {
-      // if the event isn't a series
+      // if repeatDays is empty, this is just a one-off event
       if (repeatDays == null || repeatDays.isEmpty()) {
-        // add the six input default event
-        IEvent event = new CalendarEvent.Builder()
-                .subject(subject)
-                .start(start)
-                .end(end)
-                .description(description)
-                .location(location)
-                .status(status)
-                .build();
-        calendar.addEvent(event);
+        // build the calendar event using the builder pattern
+        CalendarEvent.Builder builder = new CalendarEvent.Builder();
+        builder.subject(subject); // set subject
+        builder.start(start); // set start time
+        builder.end(end); // set end time
+        builder.description(description); // set optional description
+        builder.location(location); // set optional location
+        builder.status(status); // set public/private
+
+        // add event to calendar
+        calendar.addEvent(builder.build());
+
+        // notify user
         view.renderMessage("Event created: " + subject);
       } else {
-        // otherwise add the series implementation with additional fields
-        IEventSeries series = new CalendarEventSeries().Builder()
-                .subject(subject)
-                .start(start)
-                .end(end)
-                .description(description)
-                .location(location)
-                .status(status)
-                .setRepeatDays(repeatDays) // fix the next three to match the recurrence rule
-                .setRepeatCount(repeatCount)
-                .setRepeatUntil(repeatUntil)
-                .build();
-        calendar.addEventSeries(series);
+        // otherwise we're dealing with a recurring series
+        CalendarEventSeries.Builder seriesBuilder = new CalendarEventSeries.Builder();
+
+        // set the recurring event series fields
+        seriesBuilder.subject(subject); // set subject
+        seriesBuilder.start(start); // set start time
+        seriesBuilder.end(end); // set end time
+        seriesBuilder.description(description); // optional description
+        seriesBuilder.location(location); // optional location
+        seriesBuilder.status(status); // status setting
+        seriesBuilder.setRepeatDays(repeatDays); // set which days it repeats
+        seriesBuilder.setRepeatCount(repeatCount); // set how many times
+        seriesBuilder.setRepeatUntil(repeatUntil); // set last possible repeat date
+
+        // add series to calendar
+        calendar.addEventSeries(seriesBuilder.build());
+
+        // notify user
         view.renderMessage("Recurring event series created: " + subject);
       }
     } catch (Exception e) {
+      // if something goes wrong, wrap and rethrow with message
       throw new CommandExecutionException("Failed to create event: " + e.getMessage(), e);
     }
   }
@@ -113,6 +123,7 @@ public class CreateEventCommand implements ICommand {
    */
   @Override
   public String toString() {
+    // just print the command name and subject
     return "CreateEventCommand{" + subject + "}";
   }
 }

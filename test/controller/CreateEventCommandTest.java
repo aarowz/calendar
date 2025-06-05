@@ -3,59 +3,86 @@
 
 package controller;
 
-import org.junit.Before;
 import org.junit.Test;
 
+import exceptions.CommandExecutionException;
+
 /**
- * Test class for CreateEventCommand. Currently stubbed for compilation until model is complete.
+ * Test class for the CreateEventCommand.
+ * This suite verifies behavior for creating both single and recurring events,
+ * ensuring proper interactions with the calendar model and expected side effects.
  */
 public class CreateEventCommandTest {
 
   /**
-   * Sets up test resources before each test.
-   */
-  @Before
-  public void setUp() {
-    // Setup logic for CreateEventCommand tests will go here
-  }
-
-  /**
-   * Tests that a single event is created correctly.
+   * Verifies that executing the command creates a single, non-recurring event.
    */
   @Test
   public void testExecuteCreatesSingleEvent() {
-    // Stubbed test method
+    // TODO: Implement
   }
 
   /**
-   * Tests event creation when the description is null.
+   * Verifies creation of a recurring event series using a repeat count.
    */
   @Test
-  public void testExecuteWithNullDescription() {
-    // Stubbed test method
+  public void testExecuteCreatesRecurringEventWithCount() {
+    // TODO: Implement
   }
 
   /**
-   * Tests the creation of a recurring event.
+   * Verifies creation of a recurring event series using a repeat-until date.
    */
   @Test
-  public void testExecuteRecurringEvent() {
-    // Stubbed test method
+  public void testExecuteCreatesRecurringEventWithUntilDate() {
+    // TODO: Implement
   }
 
   /**
-   * Tests event creation with invalid date input.
+   * Verifies correct handling when optional fields like location and description are omitted.
    */
-  @Test(expected = IllegalArgumentException.class)
-  public void testInvalidDateInput() {
-    // Stubbed test method
+  @Test
+  public void testExecuteWithMissingOptionalFields() {
+    // TODO: Implement
   }
 
   /**
-   * Tests handling of duplicate event creation.
+   * Verifies that invalid inputs result in a CommandExecutionException.
+   */
+  @Test(expected = CommandExecutionException.class)
+  public void testExecuteFailsGracefullyOnModelError() {
+    // TODO: Implement
+  }
+
+  /**
+   * Ensures that events with invalid time ranges (end before start) are not accepted.
    */
   @Test(expected = IllegalArgumentException.class)
-  public void testDuplicateEvent() {
-    // Stubbed test method
+  public void testExecuteRejectsInvalidTimeRange() {
+    // TODO: Implement
+  }
+
+  /**
+   * Verifies the output message after successful single event creation.
+   */
+  @Test
+  public void testSuccessMessageSingleEvent() {
+    // TODO: Implement
+  }
+
+  /**
+   * Verifies the output message after successful series creation.
+   */
+  @Test
+  public void testSuccessMessageRecurringSeries() {
+    // TODO: Implement
+  }
+
+  /**
+   * Confirms that the toString method reflects the event subject.
+   */
+  @Test
+  public void testToStringDisplaysSubject() {
+    // TODO: Implement
   }
 }

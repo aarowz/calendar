@@ -10,7 +10,7 @@ import java.util.List;
  * Interface representing a single calendar event.
  * Provides methods to access core event properties and determine temporal conflicts.
  */
-public interface IEvent {
+public interface IEvent extends ROIEvent {
   /**
    * Determines if this event overlaps in time with another event.
    *

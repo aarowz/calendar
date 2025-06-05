@@ -3,59 +3,68 @@
 
 package controller;
 
-import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test class for EditEventCommand. Currently stubbed for compilation until model is complete.
+ * Test class for the EditEventCommand.
+ * This suite verifies that the command correctly modifies existing calendar events,
+ * handling edge cases such as partial edits, invalid edits, and editing non-existent events.
  */
 public class EditEventCommandTest {
 
   /**
-   * Sets up test resources before each test.
-   */
-  @Before
-  public void setUp() {
-    // Setup logic for EditEventCommand tests will go here
-  }
-
-  /**
-   * Tests editing the subject of a single event.
+   * Verifies that an existing event can be edited with new values.
    */
   @Test
-  public void testEditSubjectOfSingleEvent() {
-    // Stubbed test method
+  public void testEditEventSuccessfully() {
+    // TODO: Implement
   }
 
   /**
-   * Tests editing the time of a recurring event starting from a given instance.
+   * Ensures that only provided fields are updated, and others are left unchanged.
    */
   @Test
-  public void testEditTimeFromInstance() {
-    // Stubbed test method
+  public void testEditPartialFields() {
+    // TODO: Implement
   }
 
   /**
-   * Tests editing a full series.
-   */
-  @Test
-  public void testEditEntireSeries() {
-    // Stubbed test method
-  }
-
-  /**
-   * Tests error handling when editing a non-existent event.
+   * Verifies that an exception is thrown when attempting to edit a non-existent event.
    */
   @Test(expected = IllegalArgumentException.class)
-  public void testEditNonexistentEvent() {
-    // Stubbed test method
+  public void testEditNonExistentEventThrowsException() {
+    // TODO: Implement
   }
 
   /**
-   * Tests error handling for invalid property value.
+   * Confirms that edits do not result in time conflicts with other existing events.
    */
   @Test(expected = IllegalArgumentException.class)
-  public void testEditInvalidPropertyValue() {
-    // Stubbed test method
+  public void testEditCausesConflict() {
+    // TODO: Implement
+  }
+
+  /**
+   * Tests that an edit with an invalid time range (end before start) is rejected.
+   */
+  @Test(expected = IllegalArgumentException.class)
+  public void testEditWithInvalidTimeRange() {
+    // TODO: Implement
+  }
+
+  /**
+   * Verifies that the success message is properly displayed after a valid edit.
+   */
+  @Test
+  public void testEditSuccessMessageDisplayed() {
+    // TODO: Implement
+  }
+
+  /**
+   * Confirms that the command’s string representation contains the event subject.
+   */
+  @Test
+  public void testToStringContainsSubject() {
+    // TODO: Implement
   }
 }
