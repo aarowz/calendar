@@ -3,109 +3,138 @@
 
 package model;
 
+import org.junit.Before;
 import org.junit.Test;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 /**
- * Stub test class for testing calendar model functionality
- * against assignment criteria.
+ * Unit tests for the CalendarModel implementation using the ICalendar interface.
+ * Verifies behavior for single and recurring event creation, querying, duplication,
+ * busy checks, and immutability of returned data.
  */
 public class CalendarModelTest {
 
-  /**
-   * Tests that a calendar model object correctly represents event management.
-   */
-  @Test
-  public void testModelObjectPurpose() {
+  private ICalendar model;
+
+  @Before
+  public void setup() {
+    model = new CalendarModel();
   }
 
   /**
-   * Tests that model interface and implementation are distinct.
+   * Tests that a single event is created and retrieved correctly on its date.
    */
   @Test
-  public void testInterfaceImplementationSeparation() {
+  public void testCreateSingleEvent() {
+    model.createEvent("Team Meeting",
+            LocalDateTime.of(2025, 6, 5, 14, 0),
+            LocalDateTime.of(2025, 6, 5, 15, 0),
+            "Weekly sync",
+            EventStatus.PUBLIC,
+            "Room A");
+
+    List<ROIEvent> events = model.getEventsOn(LocalDate.of(2025, 6, 5));
+    assertEquals(1, events.size());
+    ROIEvent event = events.get(0);
+    assertEquals("Team Meeting", event.getSubject());
   }
 
   /**
-   * Tests that the model does not expose implementation details.
+   * Tests creation of a recurring event series and verifies the correct count.
    */
   @Test
-  public void testModelDoesNotLeakDetails() {
+  public void testCreateRecurringEventSeries() {
+    model.createEventSeries("Yoga",
+            "Morning yoga class",
+            "Studio",
+            EventStatus.PUBLIC,
+            LocalDate.of(2025, 6, 2),
+            null,
+            LocalTime.of(7, 0),
+            LocalTime.of(8, 0),
+            Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY),
+            5);
+
+    int total = 0;
+    for (int i = 0; i < 14; i++) {
+      LocalDate date = LocalDate.of(2025, 6, 2).plusDays(i);
+      total += model.getEventsOn(date).size();
+    }
+    assertEquals(5, total);
   }
 
   /**
-   * Tests that the model cannot be mutated externally without interface methods.
+   * Tests that isBusyAt returns true during an event and false outside of it.
    */
   @Test
-  public void testModelEncapsulation() {
+  public void testBusyStatusDuringEvent() {
+    model.createEvent("1-on-1",
+            LocalDateTime.of(2025, 6, 6, 10, 0),
+            LocalDateTime.of(2025, 6, 6, 10, 30),
+            "Check-in",
+            EventStatus.PRIVATE,
+            "Office");
+
+    assertTrue(model.isBusyAt(LocalDateTime.of(2025, 6, 6, 10, 15)));
+    assertFalse(model.isBusyAt(LocalDateTime.of(2025, 6, 6, 9, 59)));
   }
 
   /**
-   * Tests creation of a new calendar event through the model.
+   * Tests that creating a duplicate event with the same subject, start,
+   * and end throws an exception.
    */
-  @Test
-  public void testCreateEvent() {
+  @Test(expected = IllegalArgumentException.class)
+  public void testRejectDuplicateEvent() {
+    LocalDateTime start = LocalDateTime.of(2025, 6, 7, 9, 0);
+    LocalDateTime end = LocalDateTime.of(2025, 6, 7, 10, 0);
+
+    model.createEvent("Standup", start, end, "Daily check-in", EventStatus.PUBLIC, "Zoom");
+    model.createEvent("Standup", start, end, "Daily check-in", EventStatus.PUBLIC, "Zoom");
   }
 
   /**
-   * Tests that the model supports multiple and overlapping events.
+   * Tests that events are correctly retrieved only on their assigned days.
    */
   @Test
-  public void testSupportsMultipleEvents() {
+  public void testGetEventsOnMultipleDays() {
+    model.createEvent("Workshop",
+            LocalDateTime.of(2025, 6, 8, 11, 0),
+            LocalDateTime.of(2025, 6, 8, 13, 0),
+            "Skill session",
+            EventStatus.PUBLIC,
+            "Lab");
+
+    model.createEvent("Lunch",
+            LocalDateTime.of(2025, 6, 9, 12, 0),
+            LocalDateTime.of(2025, 6, 9, 13, 0),
+            "Team meal",
+            EventStatus.PUBLIC,
+            "Cafeteria");
+
+    assertEquals(1, model.getEventsOn(LocalDate.of(2025, 6, 8)).size());
+    assertEquals(1, model.getEventsOn(LocalDate.of(2025, 6, 9)).size());
+    assertEquals(0, model.getEventsOn(LocalDate.of(2025, 6, 10)).size());
   }
 
   /**
-   * Tests whether busy status can be checked at a specific time.
+   * Tests that isDuplicate detects existing events and distinguishes non-matching times.
    */
   @Test
-  public void testCheckBusyStatus() {
-  }
-
-  /**
-   * Tests event querying within a time range or on a specific day.
-   */
-  @Test
-  public void testQueryEventsInRange() {
-  }
-
-  /**
-   * Tests handling of duplicate events in the model.
-   */
-  @Test
-  public void testDuplicateEventRejection() {
-  }
-
-  /**
-   * Tests that a single event is added correctly.
-   */
-  @Test
-  public void testSingleEventCreation() {
-  }
-
-  /**
-   * Tests that a recurring event series is created with correct repetition.
-   */
-  @Test
-  public void testRecurringSeriesCreation() {
-  }
-
-  /**
-   * Tests correct busy/available response from the model.
-   */
-  @Test
-  public void testBusyStatusQuery() {
-  }
-
-  /**
-   * Tests proper error handling for invalid event input.
-   */
-  @Test
-  public void testInvalidEventInput() {
-  }
-
-  /**
-   * Tests correct handling of queries with invalid date ranges.
-   */
-  @Test
-  public void testInvalidQueryRangeHandling() {
+  public void testIsDuplicateDetection() {
+    LocalDateTime start = LocalDateTime.of(2025, 6, 12, 10, 0);
+    LocalDateTime end = LocalDateTime.of(2025, 6, 12, 11, 0);
+    model.createEvent("Pitch", start, end, "Presenting", EventStatus.PUBLIC, "Main Hall");
+    assertTrue(model.isDuplicate("Pitch", start, end));
+    assertFalse(model.isDuplicate("Pitch", start.minusHours(1), end));
   }
 }

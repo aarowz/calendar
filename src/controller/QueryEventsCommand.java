@@ -4,79 +4,101 @@
 package controller;
 
 import model.ICalendar;
-import model.IEvent;
+import model.ROIEvent;
 import view.IView;
 import exceptions.CommandExecutionException;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Represents a command to query and display events on a specific date.
- * Delegates querying to the model and output to the view.
+ * Represents a command to query and display calendar events, either on a specific date
+ * or between a range of start and end date times.
  */
 public class QueryEventsCommand implements ICommand {
 
   private final LocalDate queryDate;
+  private final LocalDateTime rangeStart;
+  private final LocalDateTime rangeEnd;
 
   /**
-   * Constructs a QueryEventsCommand with the specified query date.
+   * Constructor for a single-day query.
    *
-   * @param queryDate the date for which to retrieve events
+   * @param queryDate the date for which events are queried
    */
   public QueryEventsCommand(LocalDate queryDate) {
     this.queryDate = queryDate;
+    this.rangeStart = null;
+    this.rangeEnd = null;
   }
 
   /**
-   * Executes the query operation, retrieving events on the specified date
-   * and displaying them using the view.
+   * Constructor for a range-based query.
    *
-   * @param calendar the calendar model
-   * @param view     the output view to display results
-   * @throws CommandExecutionException if the query fails
+   * @param rangeStart the start datetime
+   * @param rangeEnd   the end datetime
+   */
+  public QueryEventsCommand(LocalDateTime rangeStart, LocalDateTime rangeEnd) {
+    this.queryDate = null;
+    this.rangeStart = rangeStart;
+    this.rangeEnd = rangeEnd;
+  }
+
+  /**
+   * Executes the query and displays results to the user.
+   * Chooses between single-day or date-range logic based on which constructor was used.
    */
   @Override
   public void execute(ICalendar calendar, IView view) throws CommandExecutionException {
     try {
-      // create a list of the events that are on the given query date
-      List<IEvent> events = calendar.getEventsOn(queryDate);
+      if (queryDate != null) {
+        // Query all events on a single date
+        List<ROIEvent> events = calendar.getEventsOn(queryDate);
 
-      // if there's no events on the given query date
-      if (events.isEmpty()) {
-        view.renderMessage("No events found on " + queryDate);
-      } else {
-        // create a string builder that accumulates the events on the given day
-        StringBuilder sb = new StringBuilder();
-        sb.append("Events on ").append(queryDate).append(":\n");
-
-        // keep appending for each event
-        for (IEvent event : events) {
-          sb.append("- ").append(event.toString()).append("\n");
+        if (events.isEmpty()) {
+          view.renderMessage("No events found on " + queryDate);
+        } else {
+          StringBuilder sb = new StringBuilder("Events on " + queryDate + ":\n");
+          for (ROIEvent event : events) {
+            sb.append("- ").append(event.toString()).append("\n");
+          }
+          view.renderMessage(sb.toString());
         }
+      } else {
+        // Query all events within a range
+        List<ROIEvent> events = calendar.getEventsBetween(rangeStart, rangeEnd);
 
-        // render the events (basically display it in the console, and later probably through the
-        // app view itself
-        view.renderMessage(sb.toString());
+        if (events.isEmpty()) {
+          view.renderMessage("No events found between " + rangeStart + " and " + rangeEnd);
+        } else {
+          StringBuilder sb = new StringBuilder("Events from " + rangeStart +
+                  " to " + rangeEnd + ":\n");
+          for (ROIEvent event : events) {
+            sb.append("- ").append(event.toString()).append("\n");
+          }
+          view.renderMessage(sb.toString());
+        }
       }
     } catch (IOException e) {
-      // if there is an exception with the IO extensions that we use, indicate the internal error
       throw new CommandExecutionException("Failed to render query results", e);
     } catch (Exception e) {
-      // if there is an exception with the command because the user inputted bogus, indicate the
-      // error
       throw new CommandExecutionException("Failed to query events: " + e.getMessage(), e);
     }
   }
 
   /**
-   * Returns a string representation of the command.
+   * Return a string representation of the output for debugging.
    *
-   * @return a description of the query command
+   * @return the string representation of the query result
    */
   @Override
   public String toString() {
-    return "QueryEventsCommand{date=" + queryDate + "}";
+    if (queryDate != null) {
+      return "QueryEventsCommand{date=" + queryDate + "}";
+    } else {
+      return "QueryEventsCommand{range=" + rangeStart + " to " + rangeEnd + "}";
+    }
   }
 }

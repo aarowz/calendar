@@ -4,7 +4,7 @@
 package model;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.UUID;
 
 /**
  * Interface representing a single calendar event.
@@ -21,24 +21,30 @@ public interface IEvent extends ROIEvent {
 
   /**
    * Edits a single event.
+   *
+   * @param newSubject     the updated subject for the event
+   * @param newStart       the updated start date and time
+   * @param newEnd         the updated end date and time
+   * @param newDescription the updated description
+   * @param newStatus      the updated public/private status
+   * @param newLocation    the updated location
+   * @return a new IEvent instance with the updated fields
    */
-  IEvent editEvent();
-  //if the edit is on an event in a series, we only pull it out of the series if we change the start time
+  IEvent editEvent(String newSubject, LocalDateTime newStart, LocalDateTime newEnd,
+                   String newDescription, EventStatus newStatus, String newLocation);
 
   /**
-   * Changes the property of the given event (irrespective of whether it is single or part of a
-   * series).
+   * Returns the series ID if this event is part of a recurring series.
+   * May return null if it's a standalone event.
+   *
+   * @return the series UUID or null
    */
-  List<IEvent> editEvents();
-  //this will also move the edited events to a new series and remove them from the old one, check this one
+  UUID getSeriesId();
 
   /**
-   * Identifies the event that has the given subject and starts at the given date and time and
-   * edit its property. If this event is part of a series then the properties of all events in
-   * that series that start at or after the given date and time should be changed. If this event
-   * is not part of a series then this has the same effect as the command above.
+   * Overrides the built-in toString method.
+   *
+   * @return a String
    */
-  List<IEventSeries> editSeries();
-  //this just edits the whole series
-
+  String toString();
 }

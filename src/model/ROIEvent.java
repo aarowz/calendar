@@ -11,6 +11,7 @@ import java.util.UUID;
  * Provides access to all properties without allowing modification.
  */
 public interface ROIEvent {
+
   /**
    * Returns the subject of the event.
    */
@@ -42,7 +43,8 @@ public interface ROIEvent {
   String getLocation();
 
   /**
-   * Returns the UUID of the event's series, or a null/empty UUID if it does not belong to a series.
+   * Returns the UUID of the event's series, or a null/empty UUID
+   * if it does not belong to a series.
    */
   UUID getSeriesId();
 }

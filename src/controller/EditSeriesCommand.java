@@ -3,46 +3,42 @@
 
 package controller;
 
-import model.*;
+import java.io.IOException;
+import java.time.LocalDateTime;
+
+import model.EventStatus;
+import model.ICalendar;
 import view.IView;
 import exceptions.CommandExecutionException;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-
 /**
- * Represents a command to edit a recurring event series in the calendar model.
- * Applies updates to the series using the builder pattern to ensure immutability.
+ * Represents a command to edit all events in a series.
+ * This modifies all occurrences that share the original subject,
+ * starting from the specified instance forward in time.
  */
 public class EditSeriesCommand implements ICommand {
 
   private final String originalSubject;
   private final LocalDateTime originalStart;
+
   private final String newSubject;
   private final LocalDateTime newStart;
   private final LocalDateTime newEnd;
   private final String newDescription;
   private final String newLocation;
-  private final EventStatus newStatus;
-  private final List<Character> newRepeatDays;
-  private final Integer newRepeatCount;
-  private final LocalDate newRepeatUntil;
+  private final String newStatus;
 
   /**
-   * Constructs a command for editing a recurring event series.
+   * Constructs a command to edit an entire series of calendar events.
    *
-   * @param originalSubject the current subject of the series to identify it
-   * @param originalStart   the current start time of the series to identify it
-   * @param newSubject      new subject (nullable if unchanged)
-   * @param newStart        new start time (nullable if unchanged)
-   * @param newEnd          new end time (nullable if unchanged)
-   * @param newDescription  new description (nullable if unchanged)
-   * @param newLocation     new location (nullable if unchanged)
-   * @param newStatus       new status (nullable if unchanged)
-   * @param newRepeatDays   new recurrence days (nullable if unchanged)
-   * @param newRepeatCount  new recurrence count (nullable if unchanged)
-   * @param newRepeatUntil  new recurrence until date (nullable if unchanged)
+   * @param originalSubject the original subject used to find the series
+   * @param originalStart   the starting point in the series to begin editing
+   * @param newSubject      the new subject/title for each event
+   * @param newStart        the new start time
+   * @param newEnd          the new end time
+   * @param newDescription  the updated description
+   * @param newLocation     the updated location
+   * @param newStatus       the updated visibility ("public" or "private")
    */
   public EditSeriesCommand(String originalSubject,
                            LocalDateTime originalStart,
@@ -51,10 +47,7 @@ public class EditSeriesCommand implements ICommand {
                            LocalDateTime newEnd,
                            String newDescription,
                            String newLocation,
-                           EventStatus newStatus,
-                           List<Character> newRepeatDays,
-                           Integer newRepeatCount,
-                           LocalDate newRepeatUntil) {
+                           String newStatus) {
     this.originalSubject = originalSubject;
     this.originalStart = originalStart;
     this.newSubject = newSubject;
@@ -63,77 +56,55 @@ public class EditSeriesCommand implements ICommand {
     this.newDescription = newDescription;
     this.newLocation = newLocation;
     this.newStatus = newStatus;
-    this.newRepeatDays = newRepeatDays;
-    this.newRepeatCount = newRepeatCount;
-    this.newRepeatUntil = newRepeatUntil;
   }
 
   /**
-   * Executes the series edit by creating a modified series and replacing the old one.
+   * Executes the command to edit all events in a series.
    *
-   * @param calendar the calendar model to apply changes to
-   * @param view     the view to display feedback
-   * @throws CommandExecutionException if editing fails
+   * @param calendar the model to operate on
+   * @param view     the output view for user interaction
+   * @throws CommandExecutionException if the series could not be edited
    */
   @Override
-  public void execute(ICalendar calendar, IView view) throws CommandExecutionException {
+  public void execute(ICalendar calendar, IView view)
+          throws CommandExecutionException, IOException {
     try {
-      // edit the series using the builder updater lambda
-      calendar.editSeries(originalSubject, originalStart, builder -> {
-        // only apply updates if the new value is provided
+      // only parse status if it is being updated
+      EventStatus parsedStatus = null;
+      if (newStatus != null) {
+        parsedStatus = EventStatus.valueOf(newStatus.toUpperCase());
+      }
 
-        if (newSubject != null) {
-          builder.subject(newSubject);
-        }
+      // update all events in the series
+      calendar.editEventSeries(
+              originalSubject,
+              originalStart,
+              newSubject,
+              newStart,
+              newEnd,
+              newDescription,
+              parsedStatus,
+              newLocation
+      );
 
-        if (newStart != null) {
-          builder.start(newStart);
-        }
+      view.renderMessage("Event series successfully edited.\n");
 
-        if (newEnd != null) {
-          builder.end(newEnd);
-        }
-
-        if (newDescription != null) {
-          builder.description(newDescription);
-        }
-
-        if (newLocation != null) {
-          builder.location(newLocation);
-        }
-
-        if (newStatus != null) {
-          builder.status(newStatus);
-        }
-
-        if (newRepeatDays != null) {
-          builder.setRepeatDays(newRepeatDays);
-        }
-
-        if (newRepeatCount != null) {
-          builder.setRepeatCount(newRepeatCount);
-        }
-
-        if (newRepeatUntil != null) {
-          builder.setRepeatUntil(newRepeatUntil);
-        }
-      });
-
-      // send success message to the view
-      view.renderMessage("Recurring event series updated: " + originalSubject);
-    } catch (Exception e) {
-      // if anything fails, wrap the error
-      throw new CommandExecutionException("Failed to update recurring event series: " + e.getMessage(), e);
+    } catch (IllegalArgumentException | NullPointerException e) {
+      throw new CommandExecutionException("Failed to edit series: " + e.getMessage());
     }
   }
 
   /**
-   * Returns a short summary of this command.
-   *
-   * @return string description
+   * Returns a string representation of this command for debugging.
    */
   @Override
   public String toString() {
-    return "EditSeriesCommand{" + originalSubject + "}";
+    return String.format(
+            "EditSeriesCommand: [%s at %s] → subject='%s', start=%s, end=%s, " +
+                    "desc='%s', loc='%s', status='%s'",
+            originalSubject, originalStart,
+            newSubject, newStart, newEnd,
+            newDescription, newLocation, newStatus
+    );
   }
 }

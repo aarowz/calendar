@@ -1,0 +1,4 @@
+create event "Onboarding" from 2025-06-05T10:00 to 2025-06-05T11:00
+create event "Code Review" on 2025-06-06
+print events on 2025-06-05
+show status on 2025-06-05T10:00

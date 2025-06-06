@@ -3,7 +3,20 @@
 
 package controller;
 
+import model.CalendarModel;
+import model.EventStatus;
+import view.IView;
+
+import org.junit.Before;
 import org.junit.Test;
+
+import exceptions.CommandExecutionException;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test class for the EditSeriesCommand.
@@ -12,52 +25,60 @@ import org.junit.Test;
  */
 public class EditSeriesCommandTest {
 
+  private CalendarModel model;
+  private MockView view;
+
   /**
-   * Verifies that the series is updated with new details such as subject and time.
+   * A mock view that records messages passed to renderMessage.
    */
-  @Test
-  public void testEditSeriesFieldsSuccessfully() {
-    // TODO: Implement
+  private static class MockView implements IView {
+    StringBuilder log = new StringBuilder();
+
+    @Override
+    public void renderMessage(String message) throws IOException {
+      log.append(message).append("\n");
+    }
   }
 
   /**
-   * Verifies that only recurrence details are updated without altering other fields.
+   * Sets up a calendar model with a recurring series.
    */
-  @Test
-  public void testEditSeriesRecurrenceOnly() {
-    // TODO: Implement
-  }
+  @Before
+  public void setup() throws CommandExecutionException {
+    model = new CalendarModel();
+    view = new MockView();
 
-  /**
-   * Ensures that edits to a series do not interfere with individual event instances.
-   */
-  @Test
-  public void testEditSeriesDoesNotAffectInstances() {
-    // TODO: Implement
-  }
-
-  /**
-   * Confirms that an invalid recurrence update (e.g., empty repeat days) is rejected.
-   */
-  @Test(expected = IllegalArgumentException.class)
-  public void testInvalidRecurrenceThrowsException() {
-    // TODO: Implement
+    List<Character> days = List.of('M', 'W', 'F');
+    CreateEventCommand cmd = new CreateEventCommand(
+            "Checkin",
+            LocalDateTime.of(2025, 6, 2, 10, 0),
+            LocalDateTime.of(2025, 6, 2, 11, 0),
+            "Weekly check-in",
+            "Room A",
+            EventStatus.PUBLIC,
+            days,
+            6,
+            null
+    );
+    cmd.execute(model, view);
   }
 
   /**
    * Verifies that editing a non-existent series results in appropriate error handling.
    */
-  @Test(expected = IllegalArgumentException.class)
-  public void testEditNonExistentSeriesFails() {
-    // TODO: Implement
-  }
-
-  /**
-   * Checks that the view is notified with a message summarizing the series edit.
-   */
-  @Test
-  public void testEditSeriesSuccessMessage() {
-    // TODO: Implement
+  @Test(expected = CommandExecutionException.class)
+  public void testEditNonExistentSeriesFails() throws CommandExecutionException, IOException {
+    EditSeriesCommand edit = new EditSeriesCommand(
+            "GhostSeries",
+            LocalDateTime.of(2025, 6, 1, 10, 0),
+            "Oops",
+            null,
+            null,
+            null,
+            null,
+            "public"
+    );
+    edit.execute(model, view);
   }
 
   /**
@@ -65,6 +86,17 @@ public class EditSeriesCommandTest {
    */
   @Test
   public void testToStringDescribesSeries() {
-    // TODO: Implement
+    EditSeriesCommand edit = new EditSeriesCommand(
+            "Checkin",
+            LocalDateTime.of(2025, 6, 2, 10, 0),
+            "Plan",
+            null,
+            null,
+            null,
+            null,
+            "public"
+    );
+    assertTrue(edit.toString().toLowerCase().contains("checkin"));
+    assertTrue(edit.toString().toLowerCase().contains("series"));
   }
 }

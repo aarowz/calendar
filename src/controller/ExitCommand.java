@@ -11,7 +11,7 @@ import java.io.IOException;
 
 /**
  * Represents a command to exit the calendar application.
- * In headless mode, it signals the controller to finish processing commands.
+ * Used in headless mode to terminate command processing cleanly.
  */
 public class ExitCommand implements ICommand {
 
@@ -20,23 +20,23 @@ public class ExitCommand implements ICommand {
    * No fields are needed since this command performs a fixed action.
    */
   public ExitCommand() {
-    // No initialization required
+    // no initialization required
   }
 
   /**
-   * Executes the exit operation. This typically sets a flag or informs the controller to stop.
+   * Executes the exit operation. Displays a goodbye message to the user.
    *
-   * @param calendar the calendar model (unused)
-   * @param view     the output view to display exit message
-   * @throws CommandExecutionException if the exit command cannot complete (shouldn't happen)
+   * @param calendar the calendar model (not used)
+   * @param view     the output view to display confirmation
+   * @throws CommandExecutionException if the view fails to render the message
    */
   @Override
   public void execute(ICalendar calendar, IView view) throws CommandExecutionException {
     try {
-      // if the exit command was valid, exit the program
+      // show goodbye message to user
       view.renderMessage("Exiting calendar application. Goodbye!");
     } catch (IOException e) {
-      // otherwise throw an error message
+      // if rendering fails, throw exception
       throw new CommandExecutionException("Failed to render exit message", e);
     }
   }

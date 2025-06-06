@@ -10,7 +10,6 @@ import java.util.Set;
  * Interface for a calendar model that stores and manages events.
  * This interface defines all allowable operations for interacting with the calendar,
  * and should be the only model interface exposed to the controller.
- * <p>
  * The controller may call methods on this interface but should never have direct
  * access to any model-level implementation (e.g., IEvent, CalendarEvent, etc.).
  */
@@ -25,25 +24,27 @@ public interface ICalendar {
    * @param description a description of the event
    * @param status      visibility status of the event (e.g. PUBLIC or PRIVATE)
    * @param location    the location where the event takes place
-   * @throws IllegalArgumentException if an event with the same subject, start, and end already exists
+   * @throws IllegalArgumentException if an event with the same subject,
+   *                                  start, and end already exists
    */
   void createEvent(String subject, LocalDateTime start, LocalDateTime end,
                    String description, EventStatus status, String location);
 
   /**
-
-   Creates and adds a new recurring event series to the calendar.*,
-   @param subject       the subject/title of the event,
-   @param description   a short description of the event,
-   @param location      where the event takes place,
-   @param status        visibility status (PUBLIC or PRIVATE),
-   @param startDate     the first date of the recurrence window,
-   @param endDate       the optional end date of the recurrence window (null if not used),
-   @param startTime     the time of day each event starts,
-   @param endTime       the time of day each event ends,
-   @param repeatDays    the days of the week to repeat the event on,
-   @param count         how many events to create (0 = unlimited within window),
-   @throws IllegalArgumentException if any event overlaps with an existing event*/,
+   * Creates and adds a new recurring event series to the calendar.*,
+   *
+   * @param subject     the subject/title of the event,
+   * @param description a short description of the event,
+   * @param location    where the event takes place,
+   * @param status      visibility status (PUBLIC or PRIVATE),
+   * @param startDate   the first date of the recurrence window,
+   * @param endDate     the optional end date of the recurrence window (null if not used),
+   * @param startTime   the time of day each event starts,
+   * @param endTime     the time of day each event ends,
+   * @param repeatDays  the days of the week to repeat the event on,
+   * @param count       how many events to create (0 = unlimited within window),
+   * @throws IllegalArgumentException if any event overlaps with an existing event
+   */
 
   void createEventSeries(String subject, String description, String location, EventStatus status,
                          LocalDate startDate, LocalDate endDate,
@@ -68,8 +69,8 @@ public interface ICalendar {
                  String newDescription, EventStatus newStatus, String newLocation);
 
   /**
-   * Edits all events that match the given subject and start time, pulling them out of their
-   * series (if applicable) and assigning them to a new series.
+   * Edits all events in the series with the given date and onwards.
+   * Identifies the event by the given subject and start date/time
    *
    * @param subject        the subject of the events to edit
    * @param originalStart  the original start time of the event to identify the group
@@ -86,7 +87,7 @@ public interface ICalendar {
                   String newDescription, EventStatus newStatus, String newLocation);
 
   /**
-   * Edits all events in a series starting from the given start time forward.
+   * Edits all events in a series.
    *
    * @param subject        the subject of the series
    * @param originalStart  the starting point in time to begin editing

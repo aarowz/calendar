@@ -5,65 +5,125 @@ package model;
 
 import org.junit.Test;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+
 /**
- * Test class for CalendarEventSeries.
- * Verifies correct construction, recurrence handling, and behavior of recurring events.
+ * Unit tests for {@link CalendarEventSeries}.
+ * Verifies correct recurrence generation and rule validation.
  */
 public class CalendarEventSeriesTest {
 
+  private CalendarEvent baseEvent() {
+    return new CalendarEvent.Builder()
+            .subject("Yoga")
+            .start(LocalDateTime.of(2025, 6, 2, 7, 0))
+            .end(LocalDateTime.of(2025, 6, 2, 8, 0))
+            .description("Morning session")
+            .status(EventStatus.PUBLIC)
+            .location("Studio")
+            .build();
+  }
+
   /**
-   * Tests building a valid event series with a repeat count.
+   * Tests that a series created with a repeat count generates the expected number of events.
    */
   @Test
   public void testSeriesWithRepeatCount() {
-    // TODO: Implement
+    RecurrenceRule rule = new RecurrenceRule.Builder()
+            .repeatDays(Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY))
+            .count(4)
+            .start(LocalDate.of(2025, 6, 2))
+            .build();
+
+    CalendarEventSeries series = new CalendarEventSeries(baseEvent(), rule);
+    List<IEvent> events = series.getAllOccurrences();
+    assertEquals(4, events.size());
   }
 
   /**
-   * Tests building a valid event series with a repeat-until date.
+   * Tests that a series created with a repeat-until date stops on or before that date.
    */
   @Test
   public void testSeriesWithRepeatUntilDate() {
-    // TODO: Implement
+    RecurrenceRule rule = new RecurrenceRule.Builder()
+            .repeatDays(Set.of(DayOfWeek.TUESDAY))
+            .start(LocalDate.of(2025, 6, 3))
+            .repeatUntil(LocalDate.of(2025, 6, 24))
+            .build();
+
+    CalendarEventSeries series = new CalendarEventSeries(baseEvent(), rule);
+    List<IEvent> events = series.getAllOccurrences();
+    assertEquals(4, events.size());
   }
 
   /**
-   * Tests that the recurrence days are correctly stored and returned.
+   * Tests that the recurrence rule stores and applies specified days of the week correctly.
    */
   @Test
   public void testRepeatDaysStoredCorrectly() {
-    // TODO: Implement
+    Set<DayOfWeek> days = Set.of(DayOfWeek.FRIDAY);
+    RecurrenceRule rule = new RecurrenceRule.Builder()
+            .repeatDays(days)
+            .count(2)
+            .start(LocalDate.of(2025, 6, 6))
+            .build();
+
+    CalendarEventSeries series = new CalendarEventSeries(baseEvent(), rule);
+    List<IEvent> events = series.getAllOccurrences();
+    assertEquals(2, events.size());
+    assertEquals(DayOfWeek.FRIDAY, events.get(0).getStart().getDayOfWeek());
   }
 
   /**
-   * Tests invalid configurations such as negative repeat counts or empty repeat days.
+   * Tests that invalid recurrence rules (e.g., negative count, empty days) throw exceptions.
    */
-  @Test
+  @Test(expected = IllegalArgumentException.class)
   public void testInvalidRepeatConfiguration() {
-    // TODO: Implement
+    new RecurrenceRule.Builder()
+            .repeatDays(Set.of())
+            .count(-1)
+            .start(LocalDate.of(2025, 6, 1))
+            .build();
   }
 
   /**
-   * Tests that an event series produces a valid list of individual events.
+   * Tests that the series correctly expands into a list of IEvent instances.
    */
   @Test
   public void testExpandToEvents() {
-    // TODO: Implement
+    RecurrenceRule rule = new RecurrenceRule.Builder()
+            .repeatDays(Set.of(DayOfWeek.MONDAY))
+            .count(3)
+            .start(LocalDate.of(2025, 6, 2))
+            .build();
+
+    CalendarEventSeries series = new CalendarEventSeries(baseEvent(), rule);
+    List<IEvent> events = series.getAllOccurrences();
+    assertEquals(3, events.size());
+    for (IEvent e : events) {
+      assertEquals("Yoga", e.getSubject());
+    }
   }
 
   /**
-   * Tests equals and hashCode behavior for logical equivalence.
+   * Tests that the list of occurrences returned from a series is immutable.
    */
-  @Test
-  public void testEqualsAndHashCode() {
-    // TODO: Implement
-  }
-
-  /**
-   * Tests immutability of the generated event list from the series.
-   */
-  @Test
+  @Test(expected = UnsupportedOperationException.class)
   public void testEventListImmutability() {
-    // TODO: Implement
+    RecurrenceRule rule = new RecurrenceRule.Builder()
+            .repeatDays(Set.of(DayOfWeek.THURSDAY))
+            .count(1)
+            .start(LocalDate.of(2025, 6, 5))
+            .build();
+
+    CalendarEventSeries series = new CalendarEventSeries(baseEvent(), rule);
+    List<IEvent> events = series.getAllOccurrences();
+    events.add(baseEvent());
   }
 }

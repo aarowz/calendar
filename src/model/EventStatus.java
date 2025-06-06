@@ -8,6 +8,6 @@ package model;
  * Can be either PUBLIC or PRIVATE, allowing for potential filtering or sharing logic.
  */
 public enum EventStatus {
-  PUBLIC,
-  PRIVATE
+  PUBLIC, // the event is public
+  PRIVATE // the event is private
 }

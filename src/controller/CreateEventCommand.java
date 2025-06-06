@@ -3,127 +3,150 @@
 
 package controller;
 
-import model.*;
+import model.EventStatus;
+import model.ICalendar;
 import view.IView;
 import exceptions.CommandExecutionException;
 
-import java.io.IOException;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Represents a command to create a calendar event or recurring event series.
  * Uses builder classes to construct events and event series.
  */
 public class CreateEventCommand implements ICommand {
-
-  // fields for all event details
   private final String subject;
   private final LocalDateTime start;
   private final LocalDateTime end;
   private final String description;
   private final String location;
   private final EventStatus status;
-  private final List<Character> repeatDays;
+  private final List<Character> repeatDays; // ['M', 'W', 'F']
   private final Integer repeatCount;
   private final LocalDate repeatUntil;
 
   /**
-   * Constructs a command to create either a single event or a recurring series.
+   * Builder input for the creation command.
    *
-   * @param subject     the event subject
-   * @param start       the start time
-   * @param end         the end time
-   * @param description optional description
-   * @param location    optional location
-   * @param status      public or private status
-   * @param repeatDays  days of week to repeat on (null/empty if not recurring)
-   * @param repeatCount number of times to repeat (nullable)
-   * @param repeatUntil date to stop repeating (nullable)
+   * @param subject     the given subject
+   * @param start       the given start time
+   * @param end         the given end time
+   * @param description the given description
+   * @param location    the given location
+   * @param status      the given status
+   * @param repeatDays  the number of repeat days
+   * @param repeatCount the repeat count
+   * @param repeatUntil the time repeated until
    */
-  public CreateEventCommand(String subject,
-                            LocalDateTime start,
-                            LocalDateTime end,
-                            String description,
-                            String location,
-                            EventStatus status,
-                            List<Character> repeatDays,
-                            Integer repeatCount,
+  public CreateEventCommand(String subject, LocalDateTime start, LocalDateTime end,
+                            String description, String location, EventStatus status,
+                            List<Character> repeatDays, Integer repeatCount,
                             LocalDate repeatUntil) {
-    // initialize all fields
     this.subject = subject;
     this.start = start;
     this.end = end;
-    this.description = description;
-    this.location = location;
-    this.status = status;
+    this.description = description != null ? description : "";
+    this.location = location != null ? location : "";
+    this.status = status != null ? status : EventStatus.PUBLIC;
     this.repeatDays = repeatDays;
-    this.repeatCount = repeatCount;
+    this.repeatCount = repeatCount != null ? repeatCount : 0;
     this.repeatUntil = repeatUntil;
   }
 
   /**
-   * Executes the creation command on the given calendar model.
+   * Executes the create event command by adding either a single event
+   * or a recurring event series to the calendar model, and rendering a success message.
    *
-   * @param calendar the calendar model
-   * @param view     the view to display messages
-   * @throws CommandExecutionException if the event cannot be created
+   * @param calendar the calendar model to update
+   * @param view     the view used to display feedback
+   * @throws CommandExecutionException if event creation fails
    */
   @Override
   public void execute(ICalendar calendar, IView view) throws CommandExecutionException {
     try {
-      // if repeatDays is empty, this is just a one-off event
-      if (repeatDays == null || repeatDays.isEmpty()) {
-        // build the calendar event using the builder pattern
-        CalendarEvent.Builder builder = new CalendarEvent.Builder();
-        builder.subject(subject); // set subject
-        builder.start(start); // set start time
-        builder.end(end); // set end time
-        builder.description(description); // set optional description
-        builder.location(location); // set optional location
-        builder.status(status); // set public/private
+      // use the specified start and end time unless the end is null (all-day event)
+      LocalDateTime actualStart = this.start;
+      LocalDateTime actualEnd = this.end;
 
-        // add event to calendar
-        calendar.addEvent(builder.build());
-
-        // notify user
-        view.renderMessage("Event created: " + subject);
-      } else {
-        // otherwise we're dealing with a recurring series
-        CalendarEventSeries.Builder seriesBuilder = new CalendarEventSeries.Builder();
-
-        // set the recurring event series fields
-        seriesBuilder.subject(subject); // set subject
-        seriesBuilder.start(start); // set start time
-        seriesBuilder.end(end); // set end time
-        seriesBuilder.description(description); // optional description
-        seriesBuilder.location(location); // optional location
-        seriesBuilder.status(status); // status setting
-        seriesBuilder.setRepeatDays(repeatDays); // set which days it repeats
-        seriesBuilder.setRepeatCount(repeatCount); // set how many times
-        seriesBuilder.setRepeatUntil(repeatUntil); // set last possible repeat date
-
-        // add series to calendar
-        calendar.addEventSeries(seriesBuilder.build());
-
-        // notify user
-        view.renderMessage("Recurring event series created: " + subject);
+      // if no end time is provided, assume it's an all-day event (8am–5pm)
+      if (actualEnd == null) {
+        actualStart = start.with(LocalTime.of(8, 0));
+        actualEnd = start.with(LocalTime.of(17, 0));
       }
+
+      // if not a recurring event, create a single calendar event
+      if (repeatDays == null || repeatDays.isEmpty()) {
+        calendar.createEvent(subject, actualStart, actualEnd, description, status, location);
+        view.renderMessage("Event created: " + subject + "\n");
+      } else {
+        // otherwise, extract recurrence info and create a series
+        LocalDate startDate = actualStart.toLocalDate();
+        LocalTime seriesStartTime = actualStart.toLocalTime();
+        LocalTime seriesEndTime = actualEnd.toLocalTime();
+        Set<DayOfWeek> days = convertToDayOfWeekSet(repeatDays);
+
+        calendar.createEventSeries(subject, description, location, status,
+                startDate, repeatUntil, seriesStartTime, seriesEndTime, days, repeatCount);
+
+        view.renderMessage("Recurring event series created: " + subject + "\n");
+      }
+
     } catch (Exception e) {
-      // if something goes wrong, wrap and rethrow with message
+      // wrap and rethrow any exception that occurs during execution
       throw new CommandExecutionException("Failed to create event: " + e.getMessage(), e);
     }
   }
 
   /**
-   * Returns a short description of what this command will do.
-   *
-   * @return string representation
+   * Converts a list of weekday characters (e.g., 'M', 'W') into a Set of DayOfWeek enums.
+   */
+  private Set<DayOfWeek> convertToDayOfWeekSet(List<Character> chars) {
+    Set<DayOfWeek> result = new HashSet<>();
+
+    // apply logic to each week character
+    for (char c : chars) {
+      switch (Character.toUpperCase(c)) {
+        case 'M':
+          result.add(DayOfWeek.MONDAY);
+          break;
+        case 'T':
+          result.add(DayOfWeek.TUESDAY);
+          break;
+        case 'W':
+          result.add(DayOfWeek.WEDNESDAY);
+          break;
+        case 'R':
+          result.add(DayOfWeek.THURSDAY);
+          break;
+        case 'F':
+          result.add(DayOfWeek.FRIDAY);
+          break;
+        case 'S':
+          result.add(DayOfWeek.SATURDAY);
+          break;
+        case 'U':
+          result.add(DayOfWeek.SUNDAY);
+          break;
+        default:
+          throw new IllegalArgumentException("Invalid repeat day: " + c);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns a string representation of the command for logging/debugging.
    */
   @Override
   public String toString() {
-    // just print the command name and subject
-    return "CreateEventCommand{" + subject + "}";
+    return "CreateEventCommand{" + "subject='" + subject + '\'' + ", start=" + start +
+            ", end=" + end + ", repeatDays=" + repeatDays + ", repeatCount=" + repeatCount +
+            ", repeatUntil=" + repeatUntil + '}';
   }
 }

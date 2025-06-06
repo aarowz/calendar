@@ -12,9 +12,13 @@ import java.util.Objects;
  * configuration of the view.
  */
 public class CalendarView implements IView {
-
   private final Appendable output;
 
+  /**
+   * Private constructor for the view.
+   *
+   * @param output the output view
+   */
   private CalendarView(Appendable output) {
     this.output = output;
   }
@@ -22,6 +26,9 @@ public class CalendarView implements IView {
   @Override
   public void renderMessage(String message) throws IOException {
     output.append(message).append(System.lineSeparator());
+    if (output instanceof java.io.Flushable) {
+      ((java.io.Flushable) output).flush();
+    }
   }
 
   /**

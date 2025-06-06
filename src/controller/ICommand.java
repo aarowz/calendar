@@ -3,6 +3,8 @@
 
 package controller;
 
+import java.io.IOException;
+
 import model.ICalendar;
 import view.IView;
 import exceptions.CommandExecutionException;
@@ -22,5 +24,5 @@ public interface ICommand {
    * @param view     the view to display any output or error messages
    * @throws CommandExecutionException if the command fails to execute properly
    */
-  void execute(ICalendar calendar, IView view) throws CommandExecutionException;
+  void execute(ICalendar calendar, IView view) throws CommandExecutionException, IOException;
 }

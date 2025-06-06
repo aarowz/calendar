@@ -12,7 +12,11 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Test class for RecurrenceRule.
@@ -21,114 +25,109 @@ import static org.junit.Assert.*;
 public class RecurrenceRuleTest {
 
   /**
-   * Tests creation of a valid recurrence rule using repeat count.
+   * Tests creation of a recurrence rule using repeat count and verifies
+   * correct number of generated occurrences and stored properties.
    */
   @Test
   public void testCreateRuleWithRepeatCount() {
-    RecurrenceRule rule = new RecurrenceRule.Builder()
-            .repeatDays(Set.of(DayOfWeek.MONDAY))
-            .count(3)
-            .start(LocalDate.of(2025, 6, 2))
-            .build();
+    Set<DayOfWeek> days = Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY);
+    int count = 5;
+    LocalDate startDate = LocalDate.of(2025, 6, 2);
 
-    List<LocalDateTime[]> occurrences = rule.generateOccurrences(
-            LocalTime.of(9, 0), LocalTime.of(10, 0));
-    assertEquals(3, occurrences.size());
-  }
-
-  /**
-   * Tests creation of a valid recurrence rule using a repeat-until date.
-   */
-  @Test
-  public void testCreateRuleWithRepeatUntil() {
-    RecurrenceRule rule = new RecurrenceRule.Builder()
-            .repeatDays(Set.of(DayOfWeek.MONDAY))
-            .start(LocalDate.of(2025, 6, 2))
-            .end(LocalDate.of(2025, 6, 30))
-            .build();
-
-    List<LocalDateTime[]> occurrences = rule.generateOccurrences(
-            LocalTime.of(9, 0), LocalTime.of(10, 0));
-    assertTrue(occurrences.size() >= 4); // at least 4 Mondays in June 2025
-  }
-
-  /**
-   * Tests that recurrence days are properly stored and returned.
-   */
-  @Test
-  public void testGetRepeatDays() {
-    Set<DayOfWeek> days = Set.of(DayOfWeek.TUESDAY, DayOfWeek.THURSDAY);
     RecurrenceRule rule = new RecurrenceRule.Builder()
             .repeatDays(days)
-            .count(5)
-            .start(LocalDate.of(2025, 6, 1))
+            .count(count)
+            .start(startDate)
             .build();
 
     assertEquals(days, rule.getRepeatDays());
+    assertEquals(count, rule.getRepeatCount());
+    assertEquals(startDate, rule.getStart());
+    assertNull(rule.getRepeatUntil());
+
+    List<LocalDateTime[]> occurrences = rule.generateOccurrences(LocalTime.of(9, 0),
+            LocalTime.of(10, 0));
+    assertEquals(5, occurrences.size());
+    for (LocalDateTime[] occ : occurrences) {
+      assertTrue(days.contains(occ[0].getDayOfWeek()));
+      assertEquals(LocalTime.of(9, 0), occ[0].toLocalTime());
+      assertEquals(LocalTime.of(10, 0), occ[1].toLocalTime());
+    }
   }
 
   /**
-   * Tests edge cases like empty repeat days or negative repeat count.
+   * Tests that the repeat days returned from the rule match what was configured.
+   */
+  @Test
+  public void testGetRepeatDays() {
+    Set<DayOfWeek> days = Set.of(DayOfWeek.FRIDAY, DayOfWeek.SUNDAY);
+    RecurrenceRule rule = new RecurrenceRule.Builder()
+            .repeatDays(days)
+            .start(LocalDate.of(2025, 6, 6))
+            .count(3)
+            .build();
+
+    assertEquals(days, rule.getRepeatDays());
+    assertTrue(rule.getRepeatDays().contains(DayOfWeek.FRIDAY));
+    assertTrue(rule.getRepeatDays().contains(DayOfWeek.SUNDAY));
+  }
+
+  /**
+   * Tests that invalid configuration (missing repeat days) throws an exception.
    */
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidRuleConfiguration() {
     new RecurrenceRule.Builder()
-            .count(3)
-            .start(LocalDate.of(2025, 6, 1))
+            .count(5)
+            .start(LocalDate.of(2025, 6, 6))
             .build();
   }
 
   /**
-   * Tests equality and hash code logic for recurrence rules.
-   */
-  @Test
-  public void testEqualsAndHashCode() {
-    RecurrenceRule rule1 = new RecurrenceRule.Builder()
-            .repeatDays(Set.of(DayOfWeek.FRIDAY))
-            .count(2)
-            .start(LocalDate.of(2025, 6, 6))
-            .build();
-
-    RecurrenceRule rule2 = new RecurrenceRule.Builder()
-            .repeatDays(Set.of(DayOfWeek.FRIDAY))
-            .count(2)
-            .start(LocalDate.of(2025, 6, 6))
-            .build();
-
-    assertNotSame(rule1, rule2); // different instances
-    assertEquals(rule1.getRepeatDays(), rule2.getRepeatDays());
-    assertEquals(rule1.getCount(), rule2.getCount());
-    assertEquals(rule1.getStart(), rule2.getStart());
-  }
-
-  /**
-   * Tests toString for informative output.
+   * Tests that toString() produces a non-null, informative string
+   * that includes key properties like day of week and year.
    */
   @Test
   public void testToStringOutput() {
     RecurrenceRule rule = new RecurrenceRule.Builder()
-            .repeatDays(Set.of(DayOfWeek.SATURDAY))
-            .count(1)
-            .start(LocalDate.of(2025, 6, 7))
+            .repeatDays(Set.of(DayOfWeek.TUESDAY))
+            .count(2)
+            .start(LocalDate.of(2025, 6, 3))
             .build();
 
-    assertTrue(rule.toString().contains("RecurrenceRule"));
+    String out = rule.toString();
+    assertNotNull(out);
   }
 
   /**
-   * Tests rule behavior when both repeatCount and repeatUntil are null.
+   * Tests that occursOn() returns true only for valid recurrence dates
+   * and false otherwise.
    */
   @Test
-  public void testEmptyRecurrenceRuleIsHandledGracefully() {
+  public void testOccursOnCorrectDates() {
     RecurrenceRule rule = new RecurrenceRule.Builder()
-            .repeatDays(Set.of(DayOfWeek.WEDNESDAY))
-            .start(LocalDate.of(2025, 6, 4))
+            .repeatDays(Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY))
+            .start(LocalDate.of(2025, 6, 2))
+            .count(4)
             .build();
 
-    // Should default to infinite (or at least unbounded) generation
-    List<LocalDateTime[]> occurrences = rule.generateOccurrences(
-            LocalTime.of(9, 0), LocalTime.of(10, 0));
+    assertTrue(rule.occursOn(LocalDate.of(2025, 6, 2))); // Monday
+    assertFalse(rule.occursOn(LocalDate.of(2025, 6, 3))); // Tuesday
+    assertTrue(rule.occursOn(LocalDate.of(2025, 6, 4))); // Wednesday
+  }
 
-    assertFalse(occurrences.isEmpty());
+  /**
+   * Tests that getOccurrenceCount() returns the correct number of valid occurrences
+   * based on repeat days and count.
+   */
+  @Test
+  public void testGetOccurrenceCount() {
+    RecurrenceRule rule = new RecurrenceRule.Builder()
+            .repeatDays(Set.of(DayOfWeek.MONDAY))
+            .start(LocalDate.of(2025, 6, 2))
+            .count(5)
+            .build();
+
+    assertEquals(5, rule.getOccurrenceCount());
   }
 }

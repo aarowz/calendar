@@ -1,19 +1,15 @@
 // Dreshta Boghra & Aaron Zhou
 // CS3500 HW4
 
-//add a series id to this and leave it null or empty if its not in a series but in the eventSeries class, we set this field once it gets added to a series
-
 package model;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 /**
  * Immutable implementation of a calendar event.
  * Represents a single scheduled event with a subject, start and end time,
  * optional description and location, and a visibility status.
- * <p>
  * This class enforces immutability and should be constructed using a
  * full-arguments constructor. Fields should not be modified after creation.
  */
@@ -26,6 +22,11 @@ public class CalendarEvent implements IEvent {
   private final String location;
   private final UUID seriesId;
 
+  /**
+   * Private constructor to initiate the builder pattern.
+   *
+   * @param builder the given builder input
+   */
   private CalendarEvent(Builder builder) {
     this.subject = builder.subject;
     this.start = builder.start;
@@ -36,38 +37,86 @@ public class CalendarEvent implements IEvent {
     this.seriesId = builder.seriesId;
   }
 
-  private CalendarEvent(String subject, LocalDateTime start, LocalDateTime end,
-                        String description, EventStatus status, String location, UUID seriesId) {
-    this.subject = subject;
-    this.start = start;
-    this.end = end;
-    this.description = description;
-    this.status = status;
-    this.location = location;
-    this.seriesId = seriesId;
-  }
-
-  //finish this method
+  /**
+   * Determines if this event overlaps in time with another event.
+   * Two events overlap if their time intervals intersect.
+   *
+   * @param other the other event to compare against
+   * @return true if the events overlap, false otherwise
+   */
   @Override
   public boolean overlapsWith(IEvent other) {
-    return false;
+    return !this.end.isBefore(other.getStart()) && !this.start.isAfter(other.getEnd());
+  }
+
+
+  @Override
+  public IEvent editEvent(String newSubject, LocalDateTime newStart, LocalDateTime newEnd,
+                          String newDescription, EventStatus newStatus, String newLocation) {
+
+    // if the start time changed, remove the seriesId (event is no longer part of the original
+    // series)
+    boolean startChanged = !this.start.equals(newStart);
+
+    // construct the builder based on the state of each field
+    CalendarEvent.Builder builder = new CalendarEvent.Builder()
+            .subject(newSubject != null ? newSubject : this.subject)
+            .start(newStart != null ? newStart : this.start)
+            .end(newEnd != null ? newEnd : this.end)
+            .description(newDescription != null ? newDescription : this.description)
+            .status(newStatus != null ? newStatus : this.status)
+            .location(newLocation != null ? newLocation : this.location);
+
+    // if the start time has not changed and the event is a series
+    if (!startChanged && this.seriesId != null) {
+      // preserve series membership
+      builder.seriesId(this.seriesId);
+    }
+
+    // initiate the builder
+    return builder.build();
+  }
+
+
+  // read-only property accessors inherited from ROIEvent interface
+  @Override
+  public String getSubject() {
+    return subject;
   }
 
   @Override
-  public IEvent editEvent() {
-    return null;
+  public LocalDateTime getStart() {
+    return start;
   }
 
   @Override
-  public List<IEvent> editEvents() {
-    return null;
+  public LocalDateTime getEnd() {
+    return end;
   }
 
   @Override
-  public List<IEventSeries> editSeries() {
-    return null;
+  public String getDescription() {
+    return description;
   }
 
+  @Override
+  public EventStatus getStatus() {
+    return status;
+  }
+
+  @Override
+  public String getLocation() {
+    return location;
+  }
+
+  @Override
+  public UUID getSeriesId() {
+    return this.seriesId == null ? null : UUID.fromString(this.seriesId.toString());
+  }
+
+  /**
+   * Builder class for constructing CalendarEvent instances.
+   */
   public static class Builder {
     private String subject;
     private LocalDateTime start;
@@ -78,7 +127,7 @@ public class CalendarEvent implements IEvent {
     private UUID seriesId;
 
     /**
-     * Required: subject
+     * Required: subject.
      */
     public Builder subject(String subject) {
       this.subject = subject;
@@ -86,7 +135,7 @@ public class CalendarEvent implements IEvent {
     }
 
     /**
-     * Required: start
+     * Required: start.
      */
     public Builder start(LocalDateTime start) {
       this.start = start;
@@ -94,7 +143,7 @@ public class CalendarEvent implements IEvent {
     }
 
     /**
-     * Optional: end (default is midnight if not set)
+     * Optional: end (default is 1 hour after start if not set).
      */
     public Builder end(LocalDateTime end) {
       this.end = end;
@@ -102,7 +151,7 @@ public class CalendarEvent implements IEvent {
     }
 
     /**
-     * Optional: description (default is "" if not set)
+     * Optional: description (default is "" if not set).
      */
     public Builder description(String description) {
       this.description = description;
@@ -110,7 +159,7 @@ public class CalendarEvent implements IEvent {
     }
 
     /**
-     * Optional: status (default is null if not set)
+     * Optional: status (default is PUBLIC if not set).
      */
     public Builder status(EventStatus status) {
       this.status = status;
@@ -118,7 +167,7 @@ public class CalendarEvent implements IEvent {
     }
 
     /**
-     * Optional: location (default is "" if not set)
+     * Optional: location.
      */
     public Builder location(String location) {
       this.location = location;
@@ -126,37 +175,76 @@ public class CalendarEvent implements IEvent {
     }
 
     /**
-     * Will set an ID if an event is a pert of series.
+     * Optional: seriesId — only set if part of a series.
      */
     public Builder seriesId(UUID seriesId) {
       this.seriesId = seriesId;
       return this;
     }
 
-    // 3) The build() method checks any invariants you want, then calls Person's private constructor
+    /**
+     * Builds and returns an immutable CalendarEvent.
+     * Validates required fields and applies defaults for optional ones.
+     *
+     * @return a fully constructed CalendarEvent instance
+     * @throws IllegalStateException if required fields are missing or invalid
+     */
     public CalendarEvent build() {
+      // check required fields: subject and start must be provided
       if (subject == null || start == null) {
         throw new IllegalStateException("subject and start are required");
       }
+
+      // if no end time is provided, default to 1 hour after start
       if (end == null) {
         end = start.plusHours(1);
-      } else if (end != null && end.isBefore(start)) {
+      }
+      // ensure end is not before start
+      else if (end.isBefore(start)) {
         throw new IllegalStateException("End time cannot be before start time.");
       }
 
+      // default empty string for optional description if not set
       if (description == null) {
         description = "";
       }
+
+      // default empty string for optional location if not set
       if (location == null) {
         location = "";
       }
+
+      // default to PUBLIC status if not set
       if (status == null) {
         status = EventStatus.PUBLIC;
       }
-      if (seriesId == null) {
-        seriesId = new UUID(0L, 0L);
-      }
+
+      // seriesId is optional — leave as null if not part of a series
       return new CalendarEvent(this);
     }
+  }
+
+  /**
+   * String representation of the model logic for debugging.
+   *
+   * @return any debugging information
+   */
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(subject).append(" (")
+            .append(start.toString()).append(" - ")
+            .append(end.toString()).append(")");
+
+    if (location != null && !location.isEmpty()) {
+      sb.append(" @ ").append(location);
+    }
+
+    if (description != null && !description.isEmpty()) {
+      sb.append(" - ").append(description);
+    }
+
+    sb.append(" [").append(status.toString().toLowerCase()).append("]");
+    return sb.toString();
   }
 }

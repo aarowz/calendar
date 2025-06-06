@@ -18,46 +18,49 @@ import java.io.PrintWriter;
  * Supports both interactive and headless script modes based on command-line input.
  */
 public class CalendarApp {
-
   /**
    * Launches the calendar application based on mode and optional input file.
    *
    * @param args command-line arguments, starting with --mode
    */
   public static void main(String[] args) {
-
-    // check for minimum argument requirements and valid mode flag
+    // check for valid mode argument
     if (args.length < 2 || !args[0].equalsIgnoreCase("--mode")) {
-      System.err.println("Usage: --mode [interactive|headless <file>]");
+      System.err.println("Usage: --mode [interactive | headless <filename>]");
       return;
     }
 
-    // create the model
+    // initialize model
     ICalendar model = new CalendarModel();
 
-    // set up the view with output directed to stdout
+    // initialize view using System.out with auto flush
     IView view = new CalendarView.Builder()
             .setOutput(new PrintWriter(System.out, true))
             .build();
 
     try {
-      // if mode is interactive, just use standard input
+      // interactive mode: read from console
       if (args[1].equalsIgnoreCase("interactive")) {
+        System.out.println("Calendar application started in interactive mode. Type a command:");
         CalendarController controller = new CalendarController(model, view, System.in);
         controller.run();
       }
-      // if headless, make sure the input file is provided
+
+      // headless mode: read commands from file
       else if (args[1].equalsIgnoreCase("headless") && args.length > 2) {
-        InputStream in = new FileInputStream(args[2]); // use input file
+        System.out.println("Calendar application started in headless mode using file: " + args[2]);
+        InputStream in = new FileInputStream(args[2]);
         CalendarController controller = new CalendarController(model, view, in);
         controller.run();
       }
-      // if mode is unrecognized or file is missing
+
+      // missing file for headless mode
       else {
         System.err.println("Invalid mode or missing file for headless mode.");
       }
+
     } catch (Exception e) {
-      // catch anything else that goes wrong
+      // unexpected error during execution
       System.err.println("Application error: " + e.getMessage());
     }
   }

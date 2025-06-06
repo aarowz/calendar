@@ -7,14 +7,6 @@ package exceptions;
  * Exception thrown when the input command is malformed or unrecognized by the parser.
  */
 public class InvalidCommandException extends Exception {
-
-  /**
-   * Constructs an InvalidCommandException with a default message.
-   */
-  public InvalidCommandException() {
-    super("Invalid command input.");
-  }
-
   /**
    * Constructs an InvalidCommandException with a specific message.
    *
