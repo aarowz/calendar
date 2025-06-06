@@ -5,18 +5,18 @@ By Dreshta Boghra & Aaron Zhou
 
 ## 1) How to Run Our Program
 
-Launch `CalendarApp.java` using this command:
+In Intellij, go to `Run -> Edit Configurations -> Applications -> CalendarApp`. Next, go to program arguments an type:
 
 ```
-java CalendarApp --mode interactive
+--mode interactive
 ```
 
-This should start the program in **interactive mode** (basically we're saying that the user can apply calendar commands directly).
+Finally, click on `apply` and then `ok`. This should start the program in **interactive mode** (basically we're saying that the user can apply calendar commands directly).
 
 To run the program in **headless mode**, supply a path to a `.txt` file containing commands:
 
 ```
-java CalendarApp --mode headless path/to/commands.txt
+--mode headless absolute/path/to/commands.txt
 ```
 
 > Notes:
