@@ -15,7 +15,7 @@ import java.util.Set;
  * Implementation of IDelegator.
  * Delegates system-level and per-calendar commands to ICalendarMulti.
  */
-public class Delegator implements IDelegator {
+public class DelegatorImpl implements IDelegator {
   private final ICalendarMulti calendarSystem;
 
   /**
@@ -23,7 +23,7 @@ public class Delegator implements IDelegator {
    *
    * @param calendarSystem the given calendar system
    */
-  public Delegator(ICalendarMulti calendarSystem) {
+  public DelegatorImpl(ICalendarMulti calendarSystem) {
     this.calendarSystem = calendarSystem;
   }
 

@@ -3,7 +3,7 @@
 
 package controller;
 
-import model.ICalendar;
+import model.IDelegator;
 import model.ROIEvent;
 import view.IView;
 import exceptions.CommandExecutionException;
@@ -51,11 +51,11 @@ public class QueryEventsCommand implements ICommand {
    * Chooses between single-day or date-range logic based on which constructor was used.
    */
   @Override
-  public void execute(ICalendar calendar, IView view) throws CommandExecutionException {
+  public void execute(IDelegator model, IView view) throws CommandExecutionException {
     try {
       if (queryDate != null) {
         // Query all events on a single date
-        List<ROIEvent> events = calendar.getEventsOn(queryDate);
+        List<ROIEvent> events = model.getEventsOn(queryDate);
 
         if (events.isEmpty()) {
           view.renderMessage("No events found on " + queryDate);
@@ -68,7 +68,7 @@ public class QueryEventsCommand implements ICommand {
         }
       } else {
         // Query all events within a range
-        List<ROIEvent> events = calendar.getEventsBetween(rangeStart, rangeEnd);
+        List<ROIEvent> events = model.getEventsBetween(rangeStart, rangeEnd);
 
         if (events.isEmpty()) {
           view.renderMessage("No events found between " + rangeStart + " and " + rangeEnd);

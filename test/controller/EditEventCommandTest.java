@@ -5,8 +5,10 @@ package controller;
 
 import exceptions.InvalidCommandException;
 import model.CalendarModel;
+import model.CalendarMulti;
+import model.DelegatorImpl;
 import model.EventStatus;
-import model.ICalendar;
+import model.IDelegator;
 import model.IEvent;
 import model.ROIEvent;
 import view.IView;
@@ -30,7 +32,7 @@ import static org.junit.Assert.assertTrue;
  * handling edge cases such as partial edits, invalid edits, and editing non-existent events.
  */
 public class EditEventCommandTest {
-  private CalendarModel model;
+  private IDelegator model;
   private MockView view;
 
   /**
@@ -54,7 +56,7 @@ public class EditEventCommandTest {
    */
   @Before
   public void setup() throws CommandExecutionException {
-    model = new CalendarModel();
+    model = new DelegatorImpl(new CalendarMulti());
     view = new MockView();
 
     CreateEventCommand create = new CreateEventCommand(
@@ -149,7 +151,7 @@ public class EditEventCommandTest {
    */
   @Test
   public void testEditEventProp() throws Exception {
-    ICalendar model = new CalendarModel();
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new MockView();
 
     // create an event

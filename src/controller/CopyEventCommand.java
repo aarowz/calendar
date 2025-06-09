@@ -6,7 +6,7 @@ package controller;
 import java.io.IOException;
 
 import exceptions.CommandExecutionException;
-import model.ICalendar;
+import model.IDelegator;
 import view.IView;
 
 /**
@@ -14,7 +14,7 @@ import view.IView;
  */
 public class CopyEventCommand implements ICommand {
   @Override
-  public void execute(ICalendar calendar, IView view) throws CommandExecutionException,
+  public void execute(IDelegator model, IView view) throws CommandExecutionException,
           IOException {
 
   }

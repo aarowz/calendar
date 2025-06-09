@@ -3,7 +3,7 @@
 
 package controller;
 
-import model.ICalendar;
+import model.IDelegator;
 import view.IView;
 import exceptions.CommandExecutionException;
 
@@ -26,12 +26,12 @@ public class ExitCommand implements ICommand {
   /**
    * Executes the exit operation. Displays a goodbye message to the user.
    *
-   * @param calendar the calendar model (not used)
-   * @param view     the output view to display confirmation
+   * @param model the calendar model (not used)
+   * @param view  the output view to display confirmation
    * @throws CommandExecutionException if the view fails to render the message
    */
   @Override
-  public void execute(ICalendar calendar, IView view) throws CommandExecutionException {
+  public void execute(IDelegator model, IView view) throws CommandExecutionException {
     try {
       // show goodbye message to user
       view.renderMessage("Exiting calendar application. Goodbye!");

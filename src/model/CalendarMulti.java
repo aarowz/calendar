@@ -21,7 +21,7 @@ public class CalendarMulti implements ICalendarMulti {
   /**
    * Constructor for all model methods that handles logic for multiple calendars.
    */
-  public CalendarMulti(Map<String, CalendarWrapper> calendars, String activeCalendarName) {
+  public CalendarMulti() {
     this.calendars = new HashMap<>();
     this.activeCalendarName = null;
   }

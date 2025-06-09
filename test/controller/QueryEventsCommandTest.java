@@ -4,8 +4,10 @@
 package controller;
 
 import model.CalendarModel;
+import model.CalendarMulti;
+import model.DelegatorImpl;
 import model.EventStatus;
-import model.ICalendar;
+import model.IDelegator;
 import model.IEvent;
 import model.ROIEvent;
 import view.IView;
@@ -33,7 +35,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class QueryEventsCommandTest {
 
-  private CalendarModel model;
+  private IDelegator model;
   private MockView view;
 
   /**
@@ -57,7 +59,7 @@ public class QueryEventsCommandTest {
    */
   @Before
   public void setup() throws CommandExecutionException {
-    model = new CalendarModel();
+    model = new DelegatorImpl(new CalendarMulti());
     view = new MockView();
 
     CreateEventCommand e1 = new CreateEventCommand(
@@ -85,7 +87,7 @@ public class QueryEventsCommandTest {
    */
   @Test
   public void testQueryEventsOnSpecificDay() throws Exception {
-    ICalendar model = new CalendarModel();
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new MockView();
 
     // create two events on the same day
@@ -125,7 +127,7 @@ public class QueryEventsCommandTest {
    */
   @Test
   public void testEventsAtMidnightAndEndOfDay() throws Exception {
-    ICalendar model = new CalendarModel();
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new MockView();
 
     Objects.requireNonNull(CommandParser
@@ -151,7 +153,7 @@ public class QueryEventsCommandTest {
    */
   @Test
   public void testEventCrossingMidnightNotCountedFullyOnStartDay() throws Exception {
-    ICalendar model = new CalendarModel();
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new MockView();
 
     Objects.requireNonNull(CommandParser
@@ -181,7 +183,7 @@ public class QueryEventsCommandTest {
    */
   @Test
   public void testBackToBackEventsSameDay() throws Exception {
-    ICalendar model = new CalendarModel();
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new MockView();
 
     Objects.requireNonNull(CommandParser
@@ -207,7 +209,7 @@ public class QueryEventsCommandTest {
    */
   @Test
   public void testOverlappingEventsQuery() throws Exception {
-    ICalendar model = new CalendarModel();
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new MockView();
 
     Objects.requireNonNull(CommandParser
@@ -244,7 +246,7 @@ public class QueryEventsCommandTest {
    */
   @Test
   public void testIsUserBusyAtSpecificDateTime() throws Exception {
-    ICalendar model = new CalendarModel();
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new MockView();
 
     // create an event from 10:00 to 11:00 on June 20, 2025
@@ -267,7 +269,7 @@ public class QueryEventsCommandTest {
    */
   @Test
   public void testQueryEventsInDateTimeRange() throws Exception {
-    ICalendar model = new CalendarModel();
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new MockView();
 
     // create 3 events across multiple days

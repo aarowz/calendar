@@ -3,8 +3,10 @@
 
 package controller;
 
-import model.CalendarModel;
+import model.CalendarMulti;
+import model.DelegatorImpl;
 import model.EventStatus;
+import model.IDelegator;
 import view.IView;
 
 import org.junit.Before;
@@ -24,8 +26,7 @@ import static org.junit.Assert.assertTrue;
  * including recurrence fields, edge conditions, and error handling.
  */
 public class EditSeriesCommandTest {
-
-  private CalendarModel model;
+  private IDelegator model;
   private MockView view;
 
   /**
@@ -35,7 +36,7 @@ public class EditSeriesCommandTest {
     StringBuilder log = new StringBuilder();
 
     @Override
-    public void renderMessage(String message) throws IOException {
+    public void renderMessage(String message) {
       log.append(message).append("\n");
     }
   }
@@ -45,7 +46,7 @@ public class EditSeriesCommandTest {
    */
   @Before
   public void setup() throws CommandExecutionException {
-    model = new CalendarModel();
+    model = new DelegatorImpl(new CalendarMulti());
     view = new MockView();
 
     List<Character> days = List.of('M', 'W', 'F');

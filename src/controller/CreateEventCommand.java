@@ -4,7 +4,7 @@
 package controller;
 
 import model.EventStatus;
-import model.ICalendar;
+import model.IDelegator;
 import view.IView;
 import exceptions.CommandExecutionException;
 
@@ -63,12 +63,12 @@ public class CreateEventCommand implements ICommand {
    * Executes the create event command by adding either a single event
    * or a recurring event series to the calendar model, and rendering a success message.
    *
-   * @param calendar the calendar model to update
-   * @param view     the view used to display feedback
+   * @param model the calendar model to update
+   * @param view  the view used to display feedback
    * @throws CommandExecutionException if event creation fails
    */
   @Override
-  public void execute(ICalendar calendar, IView view) throws CommandExecutionException {
+  public void execute(IDelegator model, IView view) throws CommandExecutionException {
     try {
       // use the specified start and end time unless the end is null (all-day event)
       LocalDateTime actualStart = this.start;
@@ -82,7 +82,7 @@ public class CreateEventCommand implements ICommand {
 
       // if not a recurring event, create a single calendar event
       if (repeatDays == null || repeatDays.isEmpty()) {
-        calendar.createEvent(subject, actualStart, actualEnd, description, status, location);
+        model.createEvent(subject, actualStart, actualEnd, description, status, location);
         view.renderMessage("Event created: " + subject + "\n");
       } else {
         // otherwise, extract recurrence info and create a series
@@ -91,7 +91,7 @@ public class CreateEventCommand implements ICommand {
         LocalTime seriesEndTime = actualEnd.toLocalTime();
         Set<DayOfWeek> days = convertToDayOfWeekSet(repeatDays);
 
-        calendar.createEventSeries(subject, description, location, status,
+        model.createEventSeries(subject, description, location, status,
                 startDate, repeatUntil, seriesStartTime, seriesEndTime, days, repeatCount);
 
         view.renderMessage("Recurring event series created: " + subject + "\n");

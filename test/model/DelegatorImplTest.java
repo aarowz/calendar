@@ -6,5 +6,5 @@ package model;
 /**
  * Testing class for the Delegator class in the Model directory.
  */
-public class DelegatorTest {
+public class DelegatorImplTest {
 }

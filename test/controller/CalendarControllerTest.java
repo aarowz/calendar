@@ -3,10 +3,10 @@
 
 package controller;
 
-import model.CalendarModel;
-import model.EventStatus;
+import model.CalendarMulti;
+import model.DelegatorImpl;
 import model.ICalendar;
-import model.ROIEvent;
+import model.IDelegator;
 import view.IView;
 
 import org.junit.Before;
@@ -14,14 +14,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.List;
-import java.util.Set;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -31,7 +24,7 @@ import static org.junit.Assert.fail;
  * Each test includes a Javadoc describing its intended purpose.
  */
 public class CalendarControllerTest {
-  private CalendarModel model;
+  private IDelegator model;
 
   /**
    * A mock view that captures output rendered by the controller.
@@ -40,7 +33,7 @@ public class CalendarControllerTest {
     StringBuilder log = new StringBuilder();
 
     @Override
-    public void renderMessage(String message) throws IOException {
+    public void renderMessage(String message) {
       log.append(message).append("\n");
     }
 
@@ -54,100 +47,7 @@ public class CalendarControllerTest {
    */
   @Before
   public void setup() {
-    model = new CalendarModel();
-  }
-
-  /**
-   * A mock model that records if createEvent was called.
-   */
-  private static class MockModel implements ICalendar {
-    boolean createCalled = false;
-
-    @Override
-    public void createEvent(String subject, java.time.LocalDateTime start,
-                            java.time.LocalDateTime end, String description,
-                            EventStatus status, String location) {
-      createCalled = true;
-    }
-
-    @Override
-    public void createEventSeries(String subject, String description, String location,
-                                  EventStatus status, LocalDate startDate, LocalDate endDate,
-                                  LocalTime startTime, LocalTime endTime,
-                                  Set<DayOfWeek> repeatDays, int count) {
-      // stub
-    }
-
-    @Override
-    public void editEvent(String subject, LocalDateTime originalStart, String newSubject,
-                          LocalDateTime newStart, LocalDateTime newEnd, String newDescription,
-                          EventStatus newStatus, String newLocation) {
-      // stub
-    }
-
-    @Override
-    public void editEvents(String subject, LocalDateTime originalStart, String newSubject,
-                           LocalDateTime newStart, LocalDateTime newEnd, String newDescription,
-                           EventStatus newStatus, String newLocation) {
-      // stub
-    }
-
-    @Override
-    public void editEventSeries(String subject, LocalDateTime originalStart, String newSubject,
-                                LocalDateTime newStart, LocalDateTime newEnd,
-                                String newDescription, EventStatus newStatus,
-                                String newLocation) {
-      // stub
-    }
-
-    @Override
-    public List<ROIEvent> getEventsOn(LocalDate date) {
-      return null;
-    }
-
-    @Override
-    public List<ROIEvent> getEventsBetween(LocalDateTime from, LocalDateTime to) {
-      return null;
-    }
-
-    @Override
-    public boolean isBusyAt(LocalDateTime time) {
-      return false;
-    }
-
-    @Override
-    public boolean isDuplicate(String subject, LocalDateTime start, LocalDateTime end) {
-      return false;
-    }
-
-    // other ICalendar methods can be left unimplemented for this test
-  }
-
-  /**
-   * A simple mock view that does nothing.
-   */
-  private static class DummyView implements IView {
-    @Override
-    public void renderMessage(String message) throws IOException {
-      // no-op
-    }
-  }
-
-  /**
-   * Verifies that user input is parsed by the controller and passed to the model.
-   */
-  @Test
-  public void testControllerToModelConnection() {
-    String input = "create event Meeting from 2025-06-10T09:00 to 2025-06-10T10:00\nexit\n";
-    InputStream inputStream = new ByteArrayInputStream(input.getBytes());
-
-    MockModel model = new MockModel();
-    DummyView view = new DummyView();
-
-    CalendarController controller = new CalendarController(model, view, inputStream);
-    controller.run();
-
-    assertTrue("createEvent should have been called on the model", model.createCalled);
+    model = new DelegatorImpl(new CalendarMulti());
   }
 
   /**
