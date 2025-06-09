@@ -4,8 +4,9 @@
 package app;
 
 import controller.CalendarController;
-import model.CalendarModel;
-import model.ICalendar;
+import model.CalendarMulti;
+import model.DelegatorImpl;
+import model.IDelegator;
 import view.CalendarView;
 import view.IView;
 
@@ -31,7 +32,7 @@ public class CalendarApp {
     }
 
     // initialize model
-    ICalendar model = new CalendarModel();
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
 
     // initialize view using System.out with auto flush
     IView view = new CalendarView.Builder()

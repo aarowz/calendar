@@ -5,7 +5,10 @@ package controller;
 
 import exceptions.InvalidCommandException;
 import model.CalendarModel;
+import model.CalendarMulti;
+import model.DelegatorImpl;
 import model.ICalendar;
+import model.IDelegator;
 import view.CalendarView;
 import view.IView;
 
@@ -129,7 +132,7 @@ public class CommandParserTest {
     PrintWriter writer = new PrintWriter(outputStream, true);
 
     // create new model and view instances
-    ICalendar model = new CalendarModel();
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new CalendarView.Builder()
             .setOutput(writer)
             .build();

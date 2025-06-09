@@ -12,8 +12,9 @@ import java.io.StringWriter;
 
 import controller.CommandParser;
 import controller.ICommand;
-import model.CalendarModel;
-import model.ICalendar;
+import model.IDelegator;
+import model.DelegatorImpl;
+import model.CalendarMulti;
 
 import static org.junit.Assert.assertTrue;
 
@@ -56,7 +57,7 @@ public class CalendarViewTest {
    */
   @Test
   public void testPrintCommandDisplaysEventDetails() throws Exception {
-    ICalendar model = new CalendarModel();
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
     MockView view = new MockView();
 
     // create an event on a specific date

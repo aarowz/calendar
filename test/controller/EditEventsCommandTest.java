@@ -3,9 +3,10 @@
 
 package controller;
 
-import model.CalendarModel;
+import model.CalendarMulti;
+import model.DelegatorImpl;
 import model.EventStatus;
-import model.ICalendar;
+import model.IDelegator;
 import model.ROIEvent;
 import view.IView;
 
@@ -29,7 +30,7 @@ import static org.junit.Assert.assertTrue;
  * ensuring consistent updates across targeted events and correct error handling.
  */
 public class EditEventsCommandTest {
-  private CalendarModel model;
+  private IDelegator model;
   private MockView view;
 
   /**
@@ -39,7 +40,7 @@ public class EditEventsCommandTest {
     StringBuilder log = new StringBuilder();
 
     @Override
-    public void renderMessage(String message) throws IOException {
+    public void renderMessage(String message) {
       log.append(message).append("\n");
     }
   }
@@ -49,7 +50,7 @@ public class EditEventsCommandTest {
    */
   @Before
   public void setup() throws CommandExecutionException {
-    model = new CalendarModel();
+    model = new DelegatorImpl(new CalendarMulti());
     view = new MockView();
 
     List<Character> days = List.of('M', 'W', 'F');
@@ -73,7 +74,7 @@ public class EditEventsCommandTest {
    */
   @Test
   public void testEditEventsFromSpecificStartTime() throws Exception {
-    ICalendar model = new CalendarModel();
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new MockView();
 
     // create a 6-instance recurring event series
@@ -82,10 +83,6 @@ public class EditEventsCommandTest {
     ICommand create = CommandParser.parse(createCmd);
     assert create != null;
     create.execute(model, view);
-
-    // edit subject of all events starting from 2025-06-09
-    String editCmd = "edit events subject Sync from 2025-06-09T10:00 with Team Sync";
-    ICommand edit = CommandParser.parse(editCmd);
 
     // collect events and separate them by before/after edit time
     List<ROIEvent> allEvents = new ArrayList<>();
@@ -129,7 +126,7 @@ public class EditEventsCommandTest {
    */
   @Test
   public void testEditAllEventsWithSameSubject() throws Exception {
-    ICalendar model = new CalendarModel();
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new MockView();
 
     // create a recurring event series
@@ -138,10 +135,6 @@ public class EditEventsCommandTest {
     ICommand create = CommandParser.parse(createCmd);
     assert create != null;
     create.execute(model, view);
-
-    // edit the location of all events starting from 2025-06-02
-    String editCmd = "edit events location Standup from 2025-06-02T09:00 with Zoom";
-    ICommand edit = CommandParser.parse(editCmd);
 
     // gather all events in June
     List<ROIEvent> allEvents = new ArrayList<>();

@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 
 import model.EventStatus;
-import model.ICalendar;
+import model.IDelegator;
 import view.IView;
 import exceptions.CommandExecutionException;
 
@@ -17,7 +17,6 @@ import exceptions.CommandExecutionException;
  * starting from the specified instance forward in time.
  */
 public class EditSeriesCommand implements ICommand {
-
   private final String originalSubject;
   private final LocalDateTime originalStart;
 
@@ -61,12 +60,12 @@ public class EditSeriesCommand implements ICommand {
   /**
    * Executes the command to edit all events in a series.
    *
-   * @param calendar the model to operate on
-   * @param view     the output view for user interaction
+   * @param model the model to operate on
+   * @param view  the output view for user interaction
    * @throws CommandExecutionException if the series could not be edited
    */
   @Override
-  public void execute(ICalendar calendar, IView view)
+  public void execute(IDelegator model, IView view)
           throws CommandExecutionException, IOException {
     try {
       // only parse status if it is being updated
@@ -76,7 +75,7 @@ public class EditSeriesCommand implements ICommand {
       }
 
       // update all events in the series
-      calendar.editEventSeries(
+      model.editEventSeries(
               originalSubject,
               originalStart,
               newSubject,

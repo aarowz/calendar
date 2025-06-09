@@ -4,8 +4,11 @@
 package controller;
 
 import model.CalendarModel;
+import model.CalendarMulti;
+import model.DelegatorImpl;
 import model.EventStatus;
 import model.ICalendar;
+import model.IDelegator;
 import model.IEvent;
 import model.ROIEvent;
 import view.IView;
@@ -33,7 +36,7 @@ import static org.junit.Assert.assertTrue;
  * ensuring proper interactions with the calendar model and expected side effects.
  */
 public class CreateEventCommandTest {
-  private CalendarModel model;
+  private IDelegator model;
   private MockView view;
 
   /**
@@ -44,7 +47,7 @@ public class CreateEventCommandTest {
     StringBuilder log = new StringBuilder();
 
     @Override
-    public void renderMessage(String message) throws IOException {
+    public void renderMessage(String message) {
       log.append(message).append("\n");
     }
 
@@ -63,7 +66,7 @@ public class CreateEventCommandTest {
    */
   @Before
   public void setup() {
-    model = new CalendarModel();
+    model = new DelegatorImpl(new CalendarMulti());
     view = new MockView();
   }
 
@@ -92,7 +95,7 @@ public class CreateEventCommandTest {
    */
   @Test
   public void testSeriesRepeatsNTimes() throws Exception {
-    ICalendar model = new CalendarModel();
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new MockView();
 
     // command to repeat 5 times on Mondays and Wednesdays
@@ -181,7 +184,7 @@ public class CreateEventCommandTest {
    */
   @Test
   public void testSeriesRepeatsUntilDate() throws Exception {
-    ICalendar model = new CalendarModel();
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new MockView();
 
     // command to repeat on Mondays and Wednesdays until 2025-06-12
@@ -212,7 +215,7 @@ public class CreateEventCommandTest {
    */
   @Test
   public void testCreateAllDayEvent() throws Exception {
-    ICalendar model = new CalendarModel();
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new MockView();
 
     // simulate command for an all-day event
@@ -278,7 +281,7 @@ public class CreateEventCommandTest {
    */
   @Test
   public void testAllEventsInSeriesAreSameDay() throws Exception {
-    ICalendar model = new CalendarModel();
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new MockView();
 
     // create a series that repeats on Mondays and Wednesdays, 4 times
@@ -323,7 +326,7 @@ public class CreateEventCommandTest {
    */
   @Test
   public void testSeriesRepeatsOnExpectedWeekdays() throws Exception {
-    ICalendar model = new CalendarModel();
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new MockView();
 
     // command: Repeat 5 times on Mondays and Wednesdays

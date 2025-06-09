@@ -3,15 +3,15 @@
 
 package controller;
 
-import model.CalendarModel;
+import model.CalendarMulti;
+import model.DelegatorImpl;
+import model.IDelegator;
 import view.IView;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import exceptions.CommandExecutionException;
-
-import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -21,8 +21,7 @@ import static org.junit.Assert.assertTrue;
  * Verifies that the command correctly handles program termination.
  */
 public class ExitCommandTest {
-
-  private CalendarModel model;
+  private IDelegator model;
   private MockView view;
 
   /**
@@ -32,7 +31,7 @@ public class ExitCommandTest {
     private final StringBuilder log = new StringBuilder();
 
     @Override
-    public void renderMessage(String message) throws IOException {
+    public void renderMessage(String message) {
       log.append(message).append("\n");
     }
 
@@ -51,7 +50,7 @@ public class ExitCommandTest {
    */
   @Before
   public void setup() {
-    model = new CalendarModel();
+    model = new DelegatorImpl(new CalendarMulti());
     view = new MockView();
   }
 

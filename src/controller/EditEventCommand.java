@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 
 import model.EventStatus;
-import model.ICalendar;
+import model.IDelegator;
 import view.IView;
 import exceptions.CommandExecutionException;
 
@@ -20,7 +20,6 @@ import exceptions.CommandExecutionException;
 public class EditEventCommand implements ICommand {
   private final String originalSubject;
   private final LocalDateTime originalStart;
-
   private final String newSubject;
   private final LocalDateTime newStart;
   private final LocalDateTime newEnd;
@@ -63,12 +62,12 @@ public class EditEventCommand implements ICommand {
    * Executes the command by editing one event in the calendar model.
    * Fills in original values for any missing required fields.
    *
-   * @param calendar the calendar model to update
-   * @param view     the view to report output to
+   * @param model the calendar model to update
+   * @param view  the view to report output to
    * @throws CommandExecutionException if editing fails for any reason
    */
   @Override
-  public void execute(ICalendar calendar, IView view) throws CommandExecutionException,
+  public void execute(IDelegator model, IView view) throws CommandExecutionException,
           IOException {
     try {
       // parse status if provided
@@ -82,7 +81,7 @@ public class EditEventCommand implements ICommand {
       LocalDateTime finalStart = (newStart != null) ? newStart : originalStart;
 
       // call the model to apply the update
-      calendar.editEvent(
+      model.editEvent(
               originalSubject,     // used for locating the event
               originalStart,       // used for locating the event
               finalSubject,        // updated or same subject

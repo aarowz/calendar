@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 
 import model.EventStatus;
-import model.ICalendar;
+import model.IDelegator;
 import view.IView;
 import exceptions.CommandExecutionException;
 
@@ -16,7 +16,6 @@ import exceptions.CommandExecutionException;
  * This typically modifies a subset of a recurring series (starting from a given instance).
  */
 public class EditEventsCommand implements ICommand {
-
   private final String originalSubject;
   private final LocalDateTime originalStart;
 
@@ -61,12 +60,12 @@ public class EditEventsCommand implements ICommand {
    * Executes the command by applying edits to all events in the series starting from
    * the specified one.
    *
-   * @param calendar the calendar model
-   * @param view     the view for rendering output or errors
+   * @param model the calendar model
+   * @param view  the view for rendering output or errors
    * @throws CommandExecutionException if something goes wrong during the update
    */
   @Override
-  public void execute(ICalendar calendar, IView view) throws CommandExecutionException,
+  public void execute(IDelegator model, IView view) throws CommandExecutionException,
           IOException {
     try {
       // convert string status to enum only if provided
@@ -76,7 +75,7 @@ public class EditEventsCommand implements ICommand {
       }
 
       // apply edit to subset of series
-      calendar.editEvents(
+      model.editEvents(
               originalSubject,
               originalStart,
               newSubject,

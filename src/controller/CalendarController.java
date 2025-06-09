@@ -3,7 +3,7 @@
 
 package controller;
 
-import model.ICalendar;
+import model.IDelegator;
 import view.IView;
 
 import java.io.IOException;
@@ -21,7 +21,7 @@ public class CalendarController {
   // view for rendering output
   private final IView view;
   // model for executing calendar operations
-  private final ICalendar model;
+  private final IDelegator model;
 
   /**
    * Constructs the CalendarController with model, view, and readable input.
@@ -30,7 +30,7 @@ public class CalendarController {
    * @param view        the view used to render output
    * @param inputStream the input stream for user input
    */
-  public CalendarController(ICalendar model, IView view, InputStream inputStream) {
+  public CalendarController(IDelegator model, IView view, InputStream inputStream) {
     this.model = model; // store the calendar model
     this.view = view; // store the view object
     this.scanner = new Scanner(inputStream); // initialize scanner for input
