@@ -3,12 +3,17 @@
 
 package util;
 
+import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
+import model.CalendarEvent;
+import model.EventStatus;
 import model.IEvent;
+import model.ROCalendarEvent;
 
 /**
  * Utility class for timezone validation and conversions between timezones.
@@ -47,23 +52,62 @@ public class TimeZoneUtil {
    * @param toZone   the target timezone
    * @return a list of copied events with adjusted times
    */
-  public static List<IEvent> convertEventsToZone(List<IEvent> events, ZoneId fromZone,
+  public static List<IEvent> convertEventsToZone(List<IEvent> events,
+                                                 ZoneId fromZone,
                                                  ZoneId toZone) {
-    return null; // tbd
+    List<IEvent> newZoneEventsList = new ArrayList<>();
+
+    for (IEvent event : events) {
+      LocalDateTime originalStart = event.getStart();
+      LocalDateTime originalEnd = event.getEnd();
+
+      ZonedDateTime startZoned = originalStart.atZone(fromZone).withZoneSameInstant(toZone);
+      ZonedDateTime endZoned = originalEnd.atZone(fromZone).withZoneSameInstant(toZone);
+
+      LocalDateTime newStart = startZoned.toLocalDateTime();
+      LocalDateTime newEnd = endZoned.toLocalDateTime();
+
+      IEvent convertedEvent = copyWithNewTimes(event, newStart, newEnd);
+      newZoneEventsList.add(convertedEvent);
+    }
+
+    return newZoneEventsList;
   }
+
 
   /**
    * Checks if a given string is a valid IANA time zone.
+   *
+   * @param zoneId the string to validate as a timezone
+   * @return true if the zoneId is a valid IANA time zone, false otherwise
    */
   public static boolean isValidZone(String zoneId) {
-    return false; // tbd
+    try {
+      ZoneId.of(zoneId);
+      return true;
+    } catch (DateTimeException e) {
+      return false;
+    }
   }
 
   /**
-   * Creates a new IEvent based on an existing one with new start and end times.
+   * Creates a new IEvent based on an existing one, but with updated start and end times.
+   *
+   * @param original the original event to copy
+   * @param newStart the new start time
+   * @param newEnd   the new end time
+   * @return a new IEvent with updated times and identical other fields
    */
-  public static IEvent copyWithNewTimes(IEvent original, LocalDateTime newStart, LocalDateTime
-          newEnd) {
-    return null; // tbd
+  public static IEvent copyWithNewTimes(IEvent original, LocalDateTime newStart, LocalDateTime newEnd) {
+    return new CalendarEvent.Builder()
+            .subject(original.getSubject())
+            .start(newStart)
+            .end(newEnd)
+            .description(original.getDescription())
+            .location(original.getLocation())
+            .status(original.getStatus())
+            .seriesId(original.getSeriesId())
+            .build();
   }
+
 }
