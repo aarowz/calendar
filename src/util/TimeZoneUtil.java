@@ -11,9 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import model.CalendarEvent;
-import model.EventStatus;
 import model.IEvent;
-import model.ROCalendarEvent;
 
 /**
  * Utility class for timezone validation and conversions between timezones.
@@ -98,7 +96,8 @@ public class TimeZoneUtil {
    * @param newEnd   the new end time
    * @return a new IEvent with updated times and identical other fields
    */
-  public static IEvent copyWithNewTimes(IEvent original, LocalDateTime newStart, LocalDateTime newEnd) {
+  public static IEvent copyWithNewTimes(IEvent original, LocalDateTime newStart, LocalDateTime
+          newEnd) {
     return new CalendarEvent.Builder()
             .subject(original.getSubject())
             .start(newStart)
