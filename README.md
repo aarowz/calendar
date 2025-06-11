@@ -13,6 +13,11 @@ copying events across them, we needed a way to group everything together.
 
 IDelegator extends both ICalendar and ICalendarMulti, so it can handle both single-calendar and 
 multi-calendar operations. This makes our design more flexible and easier to extend in the future.
+
+We chose to disallow empty string calendar names ("") for usability and clarity. Although
+the assignment does not explicitly forbid them, an empty name leads to ambiguous behavior
+and breaks meaningful calendar selection and display. This design decision keeps the
+interface clean and predictable.
 ---
 
 ## 1) Changes in Our Program
