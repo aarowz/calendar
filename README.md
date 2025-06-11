@@ -2,6 +2,17 @@
 
 By Dreshta Boghra & Aaron Zhou
 
+
+For this assignment, we added a new interface called IDelegator and a class DelegatorImpl. 
+Now, the controller only talks to IDelegator, instead of using ICalendar directly.
+
+We made this change because we added support for multiple calendars through a new interface 
+called ICalendarMulti. In Assignment 4, we only supported a single calendar and used ICalendar 
+in the controller. But now that we have features like switching between calendars and 
+copying events across them, we needed a way to group everything together.
+
+IDelegator extends both ICalendar and ICalendarMulti, so it can handle both single-calendar and 
+multi-calendar operations. This makes our design more flexible and easier to extend in the future.
 ---
 
 ## 1) Changes in Our Program

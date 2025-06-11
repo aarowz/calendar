@@ -7,4 +7,5 @@ package controller;
  * Testing class for the CopyEventCommand class in the Controller directory.
  */
 public class CopyEventCommandTest {
+
 }
