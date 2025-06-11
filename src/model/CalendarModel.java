@@ -297,4 +297,27 @@ public class CalendarModel implements ICalendar {
     }
     return false;  // no duplicates
   }
+
+  @Override
+  public IEvent getSpecificEvent(String subject, LocalDateTime start) {
+    // for each event in the events
+    for (IEvent e : events) {
+      // if the subject and start match
+      if (e.getSubject().equals(subject) &&
+              e.getStart().withNano(0).equals(start.withNano(0))) {
+        // return the event
+        return e;
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public void addEvent(IEvent event) {
+    if (isDuplicate(event.getSubject(), event.getStart(), event.getEnd())) {
+      throw new IllegalArgumentException("Duplicate event not allowed.");
+    }
+    events.add(event);
+  }
+
 }

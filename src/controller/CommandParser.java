@@ -6,6 +6,7 @@ package controller;
 import exceptions.InvalidCommandException;
 import model.EventStatus;
 import model.ROIEvent;
+import model.IDelegator;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,6 +20,10 @@ import java.util.List;
  */
 public class CommandParser {
 
+  // ===========
+  // Main parser
+  // ===========
+
   /**
    * Parses all given commands.
    *
@@ -26,7 +31,7 @@ public class CommandParser {
    * @return the current command state after parsing
    * @throws InvalidCommandException when the command is invalid
    */
-  public static ICommand parse(String input) throws InvalidCommandException {
+  public static ICommand parse(IDelegator model, String input) throws InvalidCommandException {
     // split input into tokens
     List<String> tokens = tokenize(input);
 
@@ -42,32 +47,55 @@ public class CommandParser {
     // apply logic to command type
     switch (commandType) {
       case "create": // if create
-        // if not enough fields
-        if (tokens.size() < 2 || !tokens.get(1).equalsIgnoreCase("event")) {
-          // throw error
-          throw new InvalidCommandException("Expected 'create event' command.");
+        // handle 'create calendar --name <name> --timezone <zone>'
+        if (tokens.size() >= 6 &&
+                tokens.get(1).equalsIgnoreCase("calendar") &&
+                tokens.get(2).equalsIgnoreCase("--name") &&
+                tokens.get(4).equalsIgnoreCase("--timezone")) {
+          String name = tokens.get(3);
+          String zone = tokens.get(5);
+          return new CreateCalendarCommand(name, zone);
         }
-        // otherwise parse the create option
+
+        // fall back to 'create event'
+        if (tokens.size() < 2 || !tokens.get(1).equalsIgnoreCase("event")) {
+          throw new InvalidCommandException("Expected 'create event' or 'create calendar' " +
+                  "command.");
+        }
         return parseCreateCommand(tokens);
-      case "edit": // if edit
-        // if not enough fields
+      case "edit":
+        // ensure there's at least a second token
         if (tokens.size() < 2) {
-          // throw error
           throw new InvalidCommandException("incomplete edit command");
         }
-        // determine edit options
+
+        // check for 'edit calendar' before checking subtypes
+        if (tokens.get(1).equalsIgnoreCase("calendar")) {
+          if (tokens.size() >= 6 &&
+                  tokens.get(2).equalsIgnoreCase("--name") &&
+                  tokens.get(4).equalsIgnoreCase("--property")) {
+            // grab the name, property, and new value
+            String name = tokens.get(3);
+            String property = tokens.get(5);
+            String newValue = String.join(" ", tokens.subList(6, tokens.size()))
+                    .replaceAll("^\"|\"$", "");
+            // return the new edited calendar
+            return new EditCalendarCommand(name, property, newValue);
+          } else {
+            throw new InvalidCommandException("Expected format: edit calendar --name <name> " +
+                    "--property <prop> <value>");
+          }
+        }
+
+        // fallback to event/series editing
         switch (tokens.get(1).toLowerCase()) {
-          case "event": // if single event
-            // apply single event logic
-            return parseEditCommand(tokens);
-          case "events": // if multiple events
-            // apply multiple events logic
-            return parseEditsCommand(tokens);
-          case "series": // if series
-            // apply series logic
-            return parseEditSeries(tokens);
+          case "event":
+            return parseEditCommand(model, tokens);
+          case "events":
+            return parseEditsCommand(model, tokens);
+          case "series":
+            return parseEditSeries(model, tokens);
           default:
-            // otherwise throw exception
             throw new InvalidCommandException("unknown edit command subtype: " + tokens.get(1));
         }
       case "print": // if print
@@ -78,27 +106,98 @@ public class CommandParser {
         } else if (tokens.size() >= 6 && tokens.get(1).equals("events") &&
                 tokens.get(2).equals("from")) {
           // print events from <start> to <end>
-          LocalDateTime start = LocalDateTime.parse(tokens.get(3));
-          LocalDateTime end = LocalDateTime.parse(tokens.get(5));
+          LocalDateTime start = LocalDateTime.parse(tokens.get(3).trim());
+          LocalDateTime end = LocalDateTime.parse(tokens.get(5).trim());
           return new QueryEventsCommand(start, end);
         }
         break;
       case "show": // if show
         if (tokens.size() >= 4 && tokens.get(1).equals("status") && tokens.get(2).equals("on")) {
           // show status on <datetime>
-          LocalDateTime time = LocalDateTime.parse(tokens.get(3));
+          LocalDateTime time = LocalDateTime.parse(tokens.get(3).trim());
           return new QueryEventsCommand(time, time);
         }
         break;
       case "exit": // if exit
         // apply exit logic
         return new ExitCommand();
+      case "use": // if use
+        if (tokens.size() >= 4 &&
+                tokens.get(1).equalsIgnoreCase("calendar") &&
+                tokens.get(2).equalsIgnoreCase("--name")) {
+          // use the name
+          String name = tokens.get(3);
+          return new UseCalendarCommand(name);
+        }
+        throw new InvalidCommandException("Expected format: use calendar --name <name>");
+      case "copy": // if copy
+        if (tokens.size() >= 8 && tokens.get(1).equalsIgnoreCase("event")) {
+          int onIndex = tokens.indexOf("on");
+          int targetIndex = tokens.indexOf("--target");
+          int toIndex = tokens.indexOf("to");
+
+          // if wrong copy format
+          if (onIndex < 2 || targetIndex < onIndex || toIndex < targetIndex) {
+            throw new InvalidCommandException("Expected format: copy event <name> on <start> " +
+                    "--target <calendar> to <targetStart>");
+          }
+
+          // parse event name from tokens between 'event' and 'on'
+          String eventName = String.join(" ", tokens.subList(2, onIndex))
+                  .replaceAll("^\"|\"$", "")
+                  .trim();
+
+          // parse date times and target name
+          LocalDateTime sourceStart = LocalDateTime.parse(tokens.get(onIndex + 1).trim());
+          String targetCalendar = tokens.get(targetIndex + 1).trim();
+          LocalDateTime targetStart = LocalDateTime.parse(tokens.get(toIndex + 1).trim());
+
+          return new CopyEventCommand(eventName, sourceStart, targetCalendar, targetStart);
+        }
+
+        // check for copy events on
+        if (tokens.size() >= 8 &&
+                tokens.get(1).equalsIgnoreCase("events") &&
+                tokens.get(2).equalsIgnoreCase("on") &&
+                tokens.get(4).equalsIgnoreCase("--target") &&
+                tokens.get(6).equalsIgnoreCase("to")) {
+
+          LocalDate sourceDate = LocalDate.parse(tokens.get(3));
+          String targetCalendar = tokens.get(5);
+          LocalDate targetDate = LocalDate.parse(tokens.get(7));
+
+          return new CopyEventsOnCommand(sourceDate, targetCalendar, targetDate);
+        }
+
+        // check for: copy events between
+        if (tokens.size() >= 10 &&
+                tokens.get(1).equalsIgnoreCase("events") &&
+                tokens.get(2).equalsIgnoreCase("between") &&
+                tokens.get(4).equalsIgnoreCase("and") &&
+                tokens.get(6).equalsIgnoreCase("--target") &&
+                tokens.get(8).equalsIgnoreCase("to")) {
+
+          LocalDate startDate = LocalDate.parse(tokens.get(3));
+          LocalDate endDate = LocalDate.parse(tokens.get(5));
+          String targetCalendar = tokens.get(7);
+          LocalDate targetStart = LocalDate.parse(tokens.get(9));
+
+          return new CopyEventsBetweenCommand(startDate, endDate, targetCalendar, targetStart);
+        }
+
+        // fallthrough: copy events on / between will go here later
+        throw new InvalidCommandException("unknown or malformed copy command");
+
       default:
         // otherwise throw exception
         throw new InvalidCommandException("unknown or malformed command: " + tokens.get(0));
     }
     return null;
   }
+
+  // ===============================
+  // Create event parser and helpers
+  // ===============================
 
   /**
    * Parses a request to create a command.
@@ -165,8 +264,8 @@ public class CommandParser {
       // process basic fields
       String subject = String.join(" ", tokens.subList(2, fromIndex))
               .replaceAll("^\"|\"$", "");
-      LocalDateTime start = LocalDateTime.parse(tokens.get(fromIndex + 1));
-      LocalDateTime end = LocalDateTime.parse(tokens.get(fromIndex + 3));
+      LocalDateTime start = LocalDateTime.parse(tokens.get(fromIndex + 1).trim());
+      LocalDateTime end = LocalDateTime.parse(tokens.get(fromIndex + 3).trim());
 
       // process repeat fields
       List<Character> repeatDays = null;
@@ -214,6 +313,10 @@ public class CommandParser {
     return result;
   }
 
+  // =============================
+  // Edit event parser and helpers
+  // =============================
+
   /**
    * Parser for an edit command request.
    *
@@ -221,27 +324,32 @@ public class CommandParser {
    * @return the desired edit output
    * @throws InvalidCommandException if the command is invalid
    */
-  private static ICommand parseEditCommand(List<String> tokens) throws InvalidCommandException {
+  private static ICommand parseEditCommand(IDelegator model, List<String> tokens) throws InvalidCommandException {
     // a bunch of formatting exceptions
-    if (tokens.size() < 9 || !tokens.get(4).equalsIgnoreCase("from") ||
-            !tokens.get(6).equalsIgnoreCase("to") ||
-            !tokens.get(8).equalsIgnoreCase("with")) {
-      throw new InvalidCommandException("Expected format: edit event <property> <subject>" +
-              " from <start> to <end> with <newValue>");
+    if (tokens.size() < 9 || !tokens.contains("from") || !tokens.contains("to") ||
+            !tokens.contains("with")) {
+      throw new InvalidCommandException("Expected format: edit event <property> <subject> from " +
+              "<start> to <end> with <newValue>");
     }
 
     // otherwise
     try {
       // grab the default fields
+      int fromIndex = tokens.indexOf("from");
+      int withIndex = tokens.indexOf("with");
+
+      // parse property and subject
       String property = tokens.get(2).toLowerCase();
-      String subject = tokens.get(3).replaceAll("^\"|\"$", "");
-      LocalDateTime start = LocalDateTime.parse(tokens.get(5));
-      String newValue = tokens.get(9);
+      String subject = String.join(" ", tokens.subList(3, fromIndex))
+              .replaceAll("^\"|\"$", "");
 
-      // apply placeholder event
-      ROIEvent eventToEdit = getRoiEvent(subject, start);
+      // parse times and new value
+      LocalDateTime start = LocalDateTime.parse(tokens.get(fromIndex + 1).trim());
+      String newValue = String.join(" ", tokens.subList(withIndex + 1, tokens.size()))
+              .replaceAll("^\"|\"$", "");
 
-      // apply default properties
+      // look up original event to pre-fill existing fields
+      ROIEvent eventToEdit = getRoiEvent(model, subject, start);
       String newSubject = eventToEdit.getSubject();
       LocalDateTime newStart = eventToEdit.getStart();
       LocalDateTime newEnd = eventToEdit.getEnd();
@@ -249,16 +357,16 @@ public class CommandParser {
       String newLocation = eventToEdit.getLocation();
       String newStatus = eventToEdit.getStatus().toString();
 
-      // update subject on the property
+      // update only the specified property
       switch (property) {
         case "subject":
           newSubject = newValue;
           break;
         case "start":
-          newStart = LocalDateTime.parse(newValue);
+          newStart = LocalDateTime.parse(newValue.trim());
           break;
         case "end":
-          newEnd = LocalDateTime.parse(newValue);
+          newEnd = LocalDateTime.parse(newValue.trim());
           break;
         case "description":
           newDescription = newValue;
@@ -270,7 +378,6 @@ public class CommandParser {
           newStatus = newValue;
           break;
         default:
-          // default exception
           throw new InvalidCommandException("Unknown property: " + property);
       }
 
@@ -279,18 +386,19 @@ public class CommandParser {
               newDescription, newLocation, newStatus);
 
     } catch (Exception e) {
-      // otherwise throw an exception
       throw new InvalidCommandException("invalid format in edit event: " + e.getMessage());
     }
   }
 
-  private static ROIEvent getRoiEvent(String subject, LocalDateTime start)
+  private static ROIEvent getRoiEvent(IDelegator model, String subject, LocalDateTime start)
           throws InvalidCommandException {
     ROIEvent eventToEdit = null;
     // for each event
-    for (ROIEvent e : model.CalendarModel.getAllEvents()) {
+    for (ROIEvent e : model.getCurrentCalendar().getEventsOn(start.toLocalDate())) {
       // if the event contains a start and subject
-      if (e.getSubject().equals(subject) && e.getStart().equals(start)) {
+      if (e.getSubject().equals(subject) &&
+              e.getStart().withNano(0).equals(start.withNano(0))) {
+
         // store the event
         eventToEdit = e;
         break;
@@ -305,6 +413,10 @@ public class CommandParser {
     return eventToEdit;
   }
 
+  // =======================================
+  // Edit multiple events parser and helpers
+  // =======================================
+
   /**
    * Parser for editing multiple events.
    *
@@ -312,7 +424,7 @@ public class CommandParser {
    * @return the desired output after editing multiple events
    * @throws InvalidCommandException if the command is invalid
    */
-  private static ICommand parseEditsCommand(List<String> tokens) throws InvalidCommandException {
+  private static ICommand parseEditsCommand(IDelegator model, List<String> tokens) throws InvalidCommandException {
     // index from and with
     int fromIndex = tokens.indexOf("from");
     int withIndex = tokens.indexOf("with");
@@ -328,12 +440,12 @@ public class CommandParser {
     String property = tokens.get(2).toLowerCase();
     String subject = String.join(" ", tokens.subList(3, fromIndex))
             .replaceAll("^\"|\"$", "");
-    LocalDateTime start = LocalDateTime.parse(tokens.get(fromIndex + 1));
+    LocalDateTime start = LocalDateTime.parse(tokens.get(fromIndex + 1).trim());
     String newValue = String.join(" ", tokens.subList(withIndex + 1, tokens.size()))
             .replaceAll("^\"|\"$", "");
 
     // store the event to edit
-    ROIEvent eventToEdit = getRoiEvent(subject, start);
+    ROIEvent eventToEdit = getRoiEvent(model, subject, start);
 
     // create new field instances for property
     String newSubject = eventToEdit.getSubject();
@@ -349,10 +461,10 @@ public class CommandParser {
         newSubject = newValue;
         break;
       case "start":
-        newStart = LocalDateTime.parse(newValue);
+        newStart = LocalDateTime.parse(newValue.trim());
         break;
       case "end":
-        newEnd = LocalDateTime.parse(newValue);
+        newEnd = LocalDateTime.parse(newValue.trim());
         break;
       case "description":
         newDescription = newValue;
@@ -373,6 +485,10 @@ public class CommandParser {
             newDescription, newLocation, newStatus);
   }
 
+  // ====================================
+  // Edit event series parser and helpers
+  // ====================================
+
   /**
    * Parse a command to edit a series of events.
    *
@@ -380,7 +496,7 @@ public class CommandParser {
    * @return the updated series
    * @throws InvalidCommandException if the command is invalid
    */
-  private static ICommand parseEditSeries(List<String> tokens) throws InvalidCommandException {
+  private static ICommand parseEditSeries(IDelegator model, List<String> tokens) throws InvalidCommandException {
     // find the with index
     int withIndex = tokens.indexOf("with");
 
@@ -405,12 +521,12 @@ public class CommandParser {
     // parse the default constructor fields
     String subject = String.join(" ", tokens.subList(3, fromIndex))
             .replaceAll("^\"|\"$", "");
-    LocalDateTime start = LocalDateTime.parse(tokens.get(fromIndex + 1));
+    LocalDateTime start = LocalDateTime.parse(tokens.get(fromIndex + 1).trim());
     String newValue = String.join(" ", tokens.subList(withIndex + 1, tokens.size()))
             .replaceAll("^\"|\"$", "");
 
     // store the event to edit
-    ROIEvent eventToEdit = getRoiEvent(subject, start);
+    ROIEvent eventToEdit = getRoiEvent(model, subject, start);
 
     // create new instances for property
     String newSubject = eventToEdit.getSubject();
@@ -426,10 +542,10 @@ public class CommandParser {
         newSubject = newValue;
         break;
       case "start":
-        newStart = LocalDateTime.parse(newValue);
+        newStart = LocalDateTime.parse(newValue.trim());
         break;
       case "end":
-        newEnd = LocalDateTime.parse(newValue);
+        newEnd = LocalDateTime.parse(newValue.trim());
         break;
       case "description":
         newDescription = newValue;
@@ -477,7 +593,7 @@ public class CommandParser {
         // if there are still words
         if (current.length() > 0) {
           // add the resulting String
-          result.add(current.toString());
+          result.add(current.toString().trim());
           current.setLength(0);
         }
       } else {
@@ -488,7 +604,7 @@ public class CommandParser {
     // if the current display result exists
     if (current.length() > 0) {
       // add the result
-      result.add(current.toString());
+      result.add(current.toString().trim());
     }
     return result;
   }

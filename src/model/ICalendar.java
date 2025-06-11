@@ -141,4 +141,22 @@ public interface ICalendar {
    * @return true if the event would be a duplicate, false otherwise
    */
   boolean isDuplicate(String subject, LocalDateTime start, LocalDateTime end);
+
+  /**
+   * Retrieves a specific event from the calendar based on its subject and exact start time.
+   * Returns null if no matching event is found.
+   *
+   * @param subject the subject/title of the event
+   * @param start   the exact start time of the event
+   * @return the matching event if found, or null otherwise
+   */
+  IEvent getSpecificEvent(String subject, LocalDateTime start);
+
+  /**
+   * Adds a fully constructed event object to the calendar.
+   * Used primarily when copying existing events.
+   *
+   * @param event the event to add
+   */
+  void addEvent(IEvent event);
 }

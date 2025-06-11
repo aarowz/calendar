@@ -27,6 +27,10 @@ public class DelegatorImpl implements IDelegator {
     this.calendarSystem = calendarSystem;
   }
 
+  // ==========================================================
+  // Methods dealing with a single calendar that existed in HW4
+  // ==========================================================
+
   @Override
   public void createEvent(String subject, LocalDateTime start, LocalDateTime end,
                           String description, EventStatus status, String location) {
@@ -86,6 +90,24 @@ public class DelegatorImpl implements IDelegator {
   public boolean isDuplicate(String subject, LocalDateTime start, LocalDateTime end) {
     return calendarSystem.getCurrentCalendar().isDuplicate(subject, start, end);
   }
+
+  // ========================================================
+  // Methods dealing with a single calendar were added in HW5
+  // ========================================================
+
+  @Override
+  public IEvent getSpecificEvent(String subject, LocalDateTime start) {
+    return calendarSystem.getCurrentCalendar().getSpecificEvent(subject, start);
+  }
+
+  @Override
+  public void addEvent(IEvent event) {
+    calendarSystem.getCurrentCalendar().addEvent(event);
+  }
+
+  // =======================================
+  // Methods dealing with multiple calendars
+  // =======================================
 
   @Override
   public void createCalendar(String name, ZoneId timezone) {

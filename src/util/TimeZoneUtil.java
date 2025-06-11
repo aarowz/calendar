@@ -3,7 +3,6 @@
 
 package util;
 
-import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -17,7 +16,6 @@ import model.IEvent;
  * Utility class for timezone validation and conversions between timezones.
  */
 public class TimeZoneUtil {
-
   /**
    * Converts a local date time to a zone date time because our single calendar classes use a local
    * date time, while all of our classes that deal with multiple calendars use zone date time.
@@ -54,17 +52,21 @@ public class TimeZoneUtil {
                                                  ZoneId fromZone,
                                                  ZoneId toZone) {
     List<IEvent> newZoneEventsList = new ArrayList<>();
-
+    // for each event
     for (IEvent event : events) {
+      // track the original start and end local
       LocalDateTime originalStart = event.getStart();
       LocalDateTime originalEnd = event.getEnd();
 
+      // track the start and end zone that was converted
       ZonedDateTime startZoned = originalStart.atZone(fromZone).withZoneSameInstant(toZone);
       ZonedDateTime endZoned = originalEnd.atZone(fromZone).withZoneSameInstant(toZone);
 
+      // track the new start and end
       LocalDateTime newStart = startZoned.toLocalDateTime();
       LocalDateTime newEnd = endZoned.toLocalDateTime();
 
+      // create a copy with the event, new start, and new end
       IEvent convertedEvent = copyWithNewTimes(event, newStart, newEnd);
       newZoneEventsList.add(convertedEvent);
     }
@@ -80,10 +82,17 @@ public class TimeZoneUtil {
    * @return true if the zoneId is a valid IANA time zone, false otherwise
    */
   public static boolean isValidZone(String zoneId) {
+    // if no ID
     try {
+      if (zoneId == null || zoneId.trim().isEmpty()) {
+        // zone is invalid
+        return false;
+      }
+      // otherwise zone is valid
       ZoneId.of(zoneId);
       return true;
-    } catch (DateTimeException e) {
+    } catch (Exception e) {
+      // return false if any exception is thrown
       return false;
     }
   }
@@ -108,5 +117,4 @@ public class TimeZoneUtil {
             .seriesId(original.getSeriesId())
             .build();
   }
-
 }

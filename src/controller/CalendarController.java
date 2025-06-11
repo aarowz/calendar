@@ -54,7 +54,7 @@ public class CalendarController {
 
       try {
         // parse the input into a command object
-        ICommand command = CommandParser.parse(line);
+        ICommand command = CommandParser.parse(model, line);
 
         // execute the parsed command using the model and view
         assert command != null;

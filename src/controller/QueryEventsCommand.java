@@ -18,7 +18,6 @@ import java.util.List;
  * or between a range of start and end date times.
  */
 public class QueryEventsCommand implements ICommand {
-
   private final LocalDate queryDate;
   private final LocalDateTime rangeStart;
   private final LocalDateTime rangeEnd;
