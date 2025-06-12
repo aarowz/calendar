@@ -142,7 +142,8 @@ public class CommandParser {
       return new QueryEventsCommand(date);
     }
     // handle 'print events from <start> to <end>'
-    else if (tokens.size() >= 6 && tokens.get(1).equals("events") && tokens.get(2).equals("from")) {
+    else if (tokens.size() >= 6 && tokens.get(1).equals("events") && tokens.get(2).equals("from"))
+    {
       LocalDateTime start = LocalDateTime.parse(tokens.get(3).trim());
       LocalDateTime end = LocalDateTime.parse(tokens.get(5).trim());
       return new QueryEventsCommand(start, end);
@@ -311,20 +312,33 @@ public class CommandParser {
    * Parses a timed event command of the given form.
    * Create event subject from start to end [repeats days for n | until date].
    */
+
   private static ICommand parseTimedEvent(List<String> tokens) throws InvalidCommandException {
     int fromIndex = tokens.indexOf("from");
     if (fromIndex == -1 || !tokens.get(fromIndex + 2).equalsIgnoreCase("to")) {
-      throw new InvalidCommandException("expected format: create event " +
-              "<subject> from <start> to <end>");
+      throw new InvalidCommandException("expected format: create event <subject> from <start> " +
+              "to <end>");
     }
 
     String subject = extractSubject(tokens, fromIndex);
     LocalDateTime start = LocalDateTime.parse(tokens.get(fromIndex + 1).trim());
     LocalDateTime end = LocalDateTime.parse(tokens.get(fromIndex + 3).trim());
 
+    // Default values
+    String location = "";
+    String description = "";
+    EventStatus status = EventStatus.PUBLIC;
+
     RepeatMetadata meta = extractRepeatMetadata(tokens);
-    return new CreateEventCommand(subject, start, end, "", null,
-            EventStatus.PUBLIC, meta.days, meta.count, meta.until);
+
+    // Extract location if "at" is present
+    int atIndex = tokens.indexOf("at");
+    if (atIndex != -1 && atIndex > fromIndex + 3) {
+      location = String.join(" ", tokens.subList(atIndex + 1, tokens.size()));
+    }
+
+    return new CreateEventCommand(subject, start, end, description, location, status, meta.days,
+            meta.count, meta.until);
   }
 
   /**
