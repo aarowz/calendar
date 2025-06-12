@@ -13,7 +13,10 @@ import java.util.Set;
 
 /**
  * Implementation of IDelegator.
- * Delegates system-level and per-calendar commands to ICalendarMulti.
+ * The DelegatorImpl class functions as a calendar operations manager. It maintains access
+ * to all available calendars, tracks the active one in use, and handles user-facing functionality
+ * such as creating, editing, querying, and copying events. It encapsulates the complexity of
+ * operating on both single and multiple calendar systems.
  */
 public class DelegatorImpl implements IDelegator {
   private final ICalendarMulti calendarSystem;

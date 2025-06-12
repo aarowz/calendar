@@ -3,101 +3,144 @@
 
 package controller;
 
+import exceptions.CommandExecutionException;
+import model.CalendarMulti;
+import model.DelegatorImpl;
 import model.IDelegator;
 import org.junit.Before;
 import org.junit.Test;
 import view.IView;
 
+import java.io.IOException;
 import java.time.ZoneId;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
- * Unit tests for CreateCalendarCommand.
+ * Test class for the CreateCalendarCommand.
+ * Verifies that calendars are created with correct names and timezones,
+ * while invalid inputs and error cases are handled properly.
  */
 public class CreateCalendarCommandTest {
 
-  private IDelegator mockDelegator;
-  private IView mockView;
+  private IDelegator model;
+  private MockView view;
+
+  /**
+   * A simple mock view that logs messages for testing.
+   */
+  private static class MockView implements IView {
+    private final StringBuilder log = new StringBuilder();
+
+    @Override
+    public void renderMessage(String message) throws IOException {
+      log.append(message).append("\n");
+    }
+
+    public String getLog() {
+      return log.toString();
+    }
+  }
 
   @Before
-  public void setUp() {
-    mockDelegator = mock(IDelegator.class);
-    mockView = mock(IView.class);
+  public void setup() {
+    model = new DelegatorImpl(new CalendarMulti());
+    view = new MockView();
   }
 
-  /** Tests successful creation of a calendar with valid name and zone. */
   @Test
-  public void testCreateCalendarValid() {
-    // TODO
+  public void testCreateCalendarValid() throws CommandExecutionException, IOException {
+    ZoneId works = ZoneId.of("America/New_York"); // should throw error internally
+    String zoneString = works.toString();
+    CreateCalendarCommand cmd = new CreateCalendarCommand("work", zoneString);
+    cmd.execute(model, view);
+    assertTrue(view.getLog().toLowerCase().contains("created"));
   }
 
-  /** Tests creating a calendar with an invalid timezone string. */
-  @Test(expected = IllegalArgumentException.class)
-  public void testCreateCalendarInvalidZone() {
-    // TODO
+  @Test(expected = CommandExecutionException.class)
+  public void testCreateCalendarInvalidZone() throws CommandExecutionException, IOException {
+    ZoneId bad = ZoneId.of("Bad/Zone"); // should throw error internally
+    String zoneString = bad.toString();
+    new CreateCalendarCommand("fail", zoneString).execute(model, view);
   }
 
-  /** Tests creating a calendar with a duplicate name. */
-  @Test(expected = IllegalArgumentException.class)
-  public void testCreateCalendarDuplicateName() {
-    // TODO
+  @Test(expected = CommandExecutionException.class)
+  public void testCreateCalendarDuplicateName() throws CommandExecutionException, IOException {
+    ZoneId zone1 = ZoneId.of("UTC"); // should throw error internally
+    String zoneString = zone1.toString();
+    CreateCalendarCommand cmd1 = new CreateCalendarCommand("calendar", zoneString);
+    CreateCalendarCommand cmd2 = new CreateCalendarCommand("calendar", zoneString);
+    cmd1.execute(model, view);
+    cmd2.execute(model, view); // should throw
   }
 
-  /** Tests that null calendar name is rejected. */
-  @Test(expected = IllegalArgumentException.class)
-  public void testCreateCalendarNullName() {
-    // TODO
+  @Test(expected = CommandExecutionException.class)
+  public void testCreateCalendarNullName() throws CommandExecutionException, IOException {
+    ZoneId zone1 = ZoneId.of("UTC"); // should throw error internally
+    String zoneString = zone1.toString();
+    new CreateCalendarCommand(null, zoneString).execute(model, view);
   }
 
-  /** Tests that empty calendar name is rejected. */
-  @Test(expected = IllegalArgumentException.class)
-  public void testCreateCalendarEmptyName() {
-    // TODO
+  @Test(expected = CommandExecutionException.class)
+  public void testCreateCalendarEmptyName() throws CommandExecutionException, IOException {
+    ZoneId zone1 = ZoneId.of("UTC"); // should throw error internally
+    String zoneString = zone1.toString();
+    new CreateCalendarCommand("", zoneString).execute(model, view);
   }
 
-  /** Tests that a null timezone is rejected. */
-  @Test(expected = IllegalArgumentException.class)
-  public void testCreateCalendarNullZone() {
-    // TODO
+  @Test(expected = CommandExecutionException.class)
+  public void testCreateCalendarNullZone() throws CommandExecutionException, IOException {
+    new CreateCalendarCommand("nullzone", null).execute(model, view);
   }
 
-  /** Tests that names with different casing are treated as unique. */
   @Test
-  public void testCreateCalendarCaseSensitiveName() {
-    // TODO
+  public void testCreateCalendarCaseSensitive() throws CommandExecutionException, IOException {
+    ZoneId zone1 = ZoneId.of("UTC"); // should throw error internally
+    String zoneString = zone1.toString();
+    new CreateCalendarCommand("A", zoneString).execute(model, view);
+    new CreateCalendarCommand("a", zoneString).execute(model, view);
+    assertTrue(view.getLog().toLowerCase().contains("created"));
   }
 
-  /** Tests that multiple calendars can be created successfully. */
   @Test
-  public void testMultipleValidCalendarsCreated() {
-    // TODO
+  public void testMultipleCalendars() throws CommandExecutionException, IOException {
+    ZoneId zone1 = ZoneId.of("UTC"); // should throw error internally
+    String zoneString1 = zone1.toString();
+    ZoneId zone2 = ZoneId.of("America/Chicago"); // should throw error internally
+    String zoneString2 = zone1.toString();
+    ZoneId zone3 = ZoneId.of("Europe/London"); // should throw error internally
+    String zoneString3 = zone1.toString();
+    new CreateCalendarCommand("a", zoneString1).execute(model, view);
+    new CreateCalendarCommand("b", zoneString2).execute(model, view);
+    new CreateCalendarCommand("c", zoneString3).execute(model, view);
+    assertTrue(view.getLog().split("\n").length >= 3);
   }
 
-  /** Tests that calendar is not automatically selected after creation. */
   @Test
-  public void testCalendarNotAutoSelectedAfterCreate() {
-    // TODO
+  public void testNotAutoSelectedAfterCreate() throws CommandExecutionException, IOException {
+    ZoneId zone1 = ZoneId.of("UTC"); // should throw error internally
+    String zoneString1 = zone1.toString();
+    new CreateCalendarCommand("solo", zoneString1).execute(model, view);
+    assertFalse(view.getLog().toLowerCase().contains("using calendar"));
   }
 
-  /** Tests that an invalid command string structure throws or fails gracefully. */
-  @Test(expected = IllegalArgumentException.class)
-  public void testMalformedCommandString() {
-    // TODO
-  }
-
-  /** Tests that error messages are passed to the view on failure. */
   @Test
-  public void testErrorMessageRenderedToView() {
-    // TODO
+  public void testErrorRenderedToView() throws IOException {
+    ZoneId zone1 = ZoneId.of("UTC"); // should throw error internally
+    String zoneString1 = zone1.toString();
+    CreateCalendarCommand cmd = new CreateCalendarCommand(null, zoneString1);
+    try {
+      cmd.execute(model, view);
+    } catch (CommandExecutionException ignored) {
+    }
+    assertTrue(view.getLog().toLowerCase().contains("error"));
   }
 
-  /** Tests running create calendar in headless (batch) mode using a command file. */
   @Test
-  public void testHeadlessCreateCalendarCommand() {
-    // TODO
+  public void testToStringIncludesName() {
+    ZoneId zone1 = ZoneId.of("UTC"); // should throw error internally
+    String zoneString1 = zone1.toString();
+    CreateCalendarCommand cmd = new CreateCalendarCommand("summer", zoneString1);
+    assertTrue(cmd.toString().contains("summer"));
   }
-
-
 }
