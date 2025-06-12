@@ -1,0 +1,11 @@
+create calendar --name school --timezone EST
+create event "Team Sync" on 2025-06-20
+edit calendar --name nonexistent --property name newname
+edit calendar --name work --property color blue
+create calendar --name travel --timezone Mars/Phobos
+use calendar --name work
+copy event "Nonexistent Meeting" on 2025-06-15T10:00 --target personal to 2025-06-20T10:00
+copy event "Planning Session" on 2025-06-20T14:00 --target ghost to 2025-06-21T14:00
+copy events on 2025-06-01 --target personal to 2025-06-05
+copy events between 2025-06-10 and June-12-2025 --target school to 2025-06-20
+copy events between 2025-06-20 and 2025-06-10 --target work to 2025-07-01

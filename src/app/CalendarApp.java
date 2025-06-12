@@ -10,9 +10,10 @@ import model.IDelegator;
 import view.CalendarView;
 import view.IView;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.FileReader;
 
 /**
  * The main entry point for the Calendar application.
@@ -43,16 +44,20 @@ public class CalendarApp {
       // interactive mode: read from console
       if (args[1].equalsIgnoreCase("interactive")) {
         System.out.println("Calendar application started in interactive mode. Type a command:");
-        CalendarController controller = new CalendarController(model, view, System.in);
+        CalendarController controller =
+                new CalendarController(model, view, new InputStreamReader(System.in));
         controller.run();
       }
 
       // headless mode: read commands from file
       else if (args[1].equalsIgnoreCase("headless") && args.length > 2) {
         System.out.println("Calendar application started in headless mode using file: " + args[2]);
-        InputStream in = new FileInputStream(args[2]);
-        CalendarController controller = new CalendarController(model, view, in);
-        controller.run();
+        try (FileReader fileReader = new FileReader(args[2])) {
+          CalendarController controller = new CalendarController(model, view, fileReader);
+          controller.run();
+        } catch (IOException e) {
+          System.err.println("Failed to open file: " + e.getMessage());
+        }
       }
 
       // missing file for headless mode

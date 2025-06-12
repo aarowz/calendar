@@ -54,7 +54,8 @@ public class CalendarMultiTest {
    */
   @Test(expected = IllegalArgumentException.class)
   public void testCreateCalendarNullName() {
-    multi.createCalendar(null, ZoneId.of("UTC"));
+    multi.createCalendar(null,
+            ZoneId.of("UTC"));
   }
 
   /**
@@ -62,7 +63,8 @@ public class CalendarMultiTest {
    */
   @Test(expected = IllegalArgumentException.class)
   public void testCreateCalendarNullZone() {
-    multi.createCalendar("NullZone", null);
+    multi.createCalendar("NullZone",
+            null);
   }
 
   // editCalendar
@@ -103,7 +105,8 @@ public class CalendarMultiTest {
    */
   @Test(expected = IllegalArgumentException.class)
   public void testEditCalendarNonexistent() {
-    multi.editCalendar("Ghost", "name", "Phantom");
+    multi.editCalendar("Ghost",
+            "name", "Phantom");
   }
 
   /**
@@ -184,7 +187,8 @@ public class CalendarMultiTest {
 
     multi.useCalendar("Dest");
     List<IEvent> events = new ArrayList<>();
-    for (ROIEvent e : multi.getCurrentCalendar().getEventsOn(LocalDate.of(2025, 6, 2))) {
+    for (ROIEvent e : multi.getCurrentCalendar().getEventsOn(LocalDate.of(2025,
+            6, 2))) {
       events.add((IEvent) e);
     }
 
@@ -235,11 +239,13 @@ public class CalendarMultiTest {
             "", EventStatus.PUBLIC, "");
 
     multi.createCalendar("T", ZoneId.of("UTC"));
-    multi.copyEventsOn(LocalDate.of(2025, 6, 1), "T", LocalDate.of(2025, 6, 5));
+    multi.copyEventsOn(LocalDate.of(2025, 6, 1), "T",
+            LocalDate.of(2025, 6, 5));
     multi.useCalendar("T");
 
     List<IEvent> events = new ArrayList<>();
-    for (ROIEvent e : multi.getCurrentCalendar().getEventsOn(LocalDate.of(2025, 6, 5))) {
+    for (ROIEvent e : multi.getCurrentCalendar().getEventsOn(LocalDate.of(2025,
+            6, 5))) {
       events.add((IEvent) e);
     }
 
@@ -254,7 +260,8 @@ public class CalendarMultiTest {
   public void testCopyEventsOnTargetMissing() {
     multi.createCalendar("Only", ZoneId.of("UTC"));
     multi.useCalendar("Only");
-    multi.copyEventsOn(LocalDate.of(2025, 6, 1), "Missing", LocalDate.of(2025, 6, 2));
+    multi.copyEventsOn(LocalDate.of(2025, 6, 1), "Missing",
+            LocalDate.of(2025, 6, 2));
   }
 
   // copyEventsBetween
@@ -280,7 +287,8 @@ public class CalendarMultiTest {
     multi.useCalendar("To");
 
     List<IEvent> events = new ArrayList<>();
-    for (ROIEvent e : multi.getCurrentCalendar().getEventsOn(LocalDate.of(2025, 6, 10))) {
+    for (ROIEvent e : multi.getCurrentCalendar().getEventsOn(LocalDate.of(2025, 6,
+            10))) {
       events.add((IEvent) e);
     }
 
@@ -297,7 +305,9 @@ public class CalendarMultiTest {
     multi.createCalendar("F", ZoneId.of("UTC"));
     multi.createCalendar("T", ZoneId.of("UTC"));
     multi.useCalendar("F");
-    multi.copyEventsBetween(LocalDate.of(2025, 6, 10), LocalDate.of(2025, 6, 1), "T", LocalDate.of(2025, 6, 12));
+    multi.copyEventsBetween(LocalDate.of(2025, 6, 10), LocalDate.of(
+            2025, 6, 1), "T", LocalDate.of(2025,
+            6, 12));
   }
 
   /**
@@ -307,6 +317,8 @@ public class CalendarMultiTest {
   public void testCopyEventsBetweenNullTarget() {
     multi.createCalendar("X", ZoneId.of("UTC"));
     multi.useCalendar("X");
-    multi.copyEventsBetween(LocalDate.of(2025, 6, 1), LocalDate.of(2025, 6, 3), "Null", LocalDate.of(2025, 6, 4));
+    multi.copyEventsBetween(LocalDate.of(2025, 6, 1), LocalDate.of(
+            2025, 6, 3), "Null", LocalDate.of(2025,
+            6, 4));
   }
 }

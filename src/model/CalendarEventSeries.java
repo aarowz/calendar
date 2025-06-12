@@ -113,57 +113,92 @@ public class CalendarEventSeries implements IEventSeries {
   /**
    * Generates all recurring event instances according to the recurrence rule.
    *
-   * @return list of CalendarEvent objects
+   * @return a list of CalendarEvent objects based on the recurrence pattern
    */
   private List<IEvent> generateOccurrences() {
     List<IEvent> result = new ArrayList<>();
 
-    // start with the base event's date and extract times
+    // extract recurrence settings
     LocalDate currentDate = baseEvent.getStart().toLocalDate();
     LocalTime startTime = baseEvent.getStart().toLocalTime();
     LocalTime endTime = baseEvent.getEnd().toLocalTime();
-
-    // determine which days of the week the event repeats on
     Set<DayOfWeek> repeatDays = new HashSet<>(rule.getRepeatDays());
 
-    int count = 0; // how many occurrences we've generated so far
+    int count = 0;
 
-    // keep generating events until we hit the repeat count or repeat-until condition
+    // generate each instance until the rule's termination condition is met
     while (true) {
-      // only generate an event if today is one of the repeat days
-      if (repeatDays.contains(currentDate.getDayOfWeek())) {
-        LocalDateTime start = LocalDateTime.of(currentDate, startTime);
-        LocalDateTime end = LocalDateTime.of(currentDate, endTime);
-
-        // build the event using the base data and assign the series ID
-        CalendarEvent instance = new CalendarEvent.Builder()
-                .subject(baseEvent.getSubject())
-                .start(start)
-                .end(end)
-                .description(baseEvent.getDescription())
-                .location(baseEvent.getLocation())
-                .status(baseEvent.getStatus())
-                .seriesId(seriesId)
-                .build();
-
-        result.add(instance);
+      if (shouldGenerateOn(currentDate, repeatDays)) {
+        result.add(buildOccurrence(currentDate, startTime, endTime));
         count++;
 
-        // if a repeat count limit is set and reached, stop
-        if (rule.getRepeatCount() > 0 && count >= rule.getRepeatCount()) {
+        if (hasReachedRepeatCount(count)) {
           break;
         }
       }
 
-      // move to the next day
       currentDate = currentDate.plusDays(1);
 
-      // if we passed the repeat-until date, stop
-      if (rule.getRepeatUntil() != null && currentDate.isAfter(rule.getRepeatUntil())) {
+      if (hasPassedRepeatUntil(currentDate)) {
         break;
       }
     }
+
     return result;
+  }
+
+  /**
+   * Checks if an event should be generated on the given date.
+   *
+   * @param date       the date to check
+   * @param repeatDays the set of valid repeat days
+   * @return true if the event should occur on this day, false otherwise
+   */
+  private boolean shouldGenerateOn(LocalDate date, Set<DayOfWeek> repeatDays) {
+    return repeatDays.contains(date.getDayOfWeek());
+  }
+
+  /**
+   * Builds an individual event occurrence for the given date and times.
+   *
+   * @param date      the date of the event
+   * @param startTime the start time on that date
+   * @param endTime   the end time on that date
+   * @return a fully built CalendarEvent instance
+   */
+  private CalendarEvent buildOccurrence(LocalDate date, LocalTime startTime, LocalTime endTime) {
+    LocalDateTime start = LocalDateTime.of(date, startTime);
+    LocalDateTime end = LocalDateTime.of(date, endTime);
+
+    return new CalendarEvent.Builder()
+            .subject(baseEvent.getSubject())
+            .start(start)
+            .end(end)
+            .description(baseEvent.getDescription())
+            .location(baseEvent.getLocation())
+            .status(baseEvent.getStatus())
+            .seriesId(seriesId)
+            .build();
+  }
+
+  /**
+   * Determines whether the repeat count has been satisfied.
+   *
+   * @param count how many events have been generated so far
+   * @return true if the limit has been reached, false otherwise
+   */
+  private boolean hasReachedRepeatCount(int count) {
+    return rule.getRepeatCount() > 0 && count >= rule.getRepeatCount();
+  }
+
+  /**
+   * Checks whether the current date exceeds the recurrence end date.
+   *
+   * @param currentDate the date currently being processed
+   * @return true if the recurrence should stop due to date
+   */
+  private boolean hasPassedRepeatUntil(LocalDate currentDate) {
+    return rule.getRepeatUntil() != null && currentDate.isAfter(rule.getRepeatUntil());
   }
 
   @Override

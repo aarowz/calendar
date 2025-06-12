@@ -2,12 +2,7 @@
 
 By Dreshta Boghra & Aaron Zhou
 
-
-For this assignment, we added a new interface called IDelegator and a class DelegatorImpl. 
-Now, the controller only talks to IDelegator, instead of using ICalendar directly.
-
-We made this change because we added support for multiple calendars through a new interface 
-called ICalendarMulti. In Assignment 4, we only supported a single calendar and used ICalendar 
+In Assignment 4, we only supported a single calendar and used ICalendar 
 in the controller. But now that we have features like switching between calendars and 
 copying events across them, we needed a way to group everything together.
 
@@ -22,18 +17,18 @@ interface clean and predictable.
 
 ## 1) Changes in Our Program
 
-| #  | Change Description               | Justification               |
-|----|----------------------------------|-----------------------------|
-| 1  | [Insert change description here] | [Insert justification here] |
-| 2  | [Insert change description here] | [Insert justification here] |
-| 3  | [Insert change description here] | [Insert justification here] |
-| 4  | [Insert change description here] | [Insert justification here] |
-| 5  | [Insert change description here] | [Insert justification here] |
-| 6  | [Insert change description here] | [Insert justification here] |
-| 7  | [Insert change description here] | [Insert justification here] |
-| 8  | [Insert change description here] | [Insert justification here] |
-| 9  | [Insert change description here] | [Insert justification here] |
-| 10 | [Insert change description here] | [Insert justification here] |
+| #  | Change Description                      | Justification               |
+|----|-----------------------------------------|-----------------------------|
+| 1  | Added IDelegator interface in model     | [Insert justification here] |
+| 2  | Added DelegatorImpl class in model      | [Insert justification here] |
+| 3  | Added ICalendarMulti interface in model | [Insert justification here] |
+| 4  | Added CalendarMulti class in model      | [Insert justification here] |
+| 5  | Added CalendarWrapper class in model    | [Insert justification here] |
+| 6  | [Insert change description here]        | [Insert justification here] |
+| 7  | [Insert change description here]        | [Insert justification here] |
+| 8  | [Insert change description here]        | [Insert justification here] |
+| 9  | [Insert change description here]        | [Insert justification here] |
+| 10 | [Insert change description here]        | [Insert justification here] |
 
 ---
 

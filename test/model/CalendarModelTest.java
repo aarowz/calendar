@@ -85,8 +85,10 @@ public class CalendarModelTest {
             EventStatus.PRIVATE,
             "Office");
 
-    assertTrue(model.isBusyAt(LocalDateTime.of(2025, 6, 6, 10, 15)));
-    assertFalse(model.isBusyAt(LocalDateTime.of(2025, 6, 6, 9, 59)));
+    assertTrue(model.isBusyAt(LocalDateTime.of(2025, 6, 6, 10,
+            15)));
+    assertFalse(model.isBusyAt(LocalDateTime.of(2025, 6, 6, 9,
+            59)));
   }
 
   /**
@@ -98,8 +100,10 @@ public class CalendarModelTest {
     LocalDateTime start = LocalDateTime.of(2025, 6, 7, 9, 0);
     LocalDateTime end = LocalDateTime.of(2025, 6, 7, 10, 0);
 
-    model.createEvent("Standup", start, end, "Daily check-in", EventStatus.PUBLIC, "Zoom");
-    model.createEvent("Standup", start, end, "Daily check-in", EventStatus.PUBLIC, "Zoom");
+    model.createEvent("Standup", start, end, "Daily check-in",
+            EventStatus.PUBLIC, "Zoom");
+    model.createEvent("Standup", start, end, "Daily check-in",
+            EventStatus.PUBLIC, "Zoom");
   }
 
   /**
@@ -121,9 +125,12 @@ public class CalendarModelTest {
             EventStatus.PUBLIC,
             "Cafeteria");
 
-    assertEquals(1, model.getEventsOn(LocalDate.of(2025, 6, 8)).size());
-    assertEquals(1, model.getEventsOn(LocalDate.of(2025, 6, 9)).size());
-    assertEquals(0, model.getEventsOn(LocalDate.of(2025, 6, 10)).size());
+    assertEquals(1, model.getEventsOn(LocalDate.of(2025, 6,
+            8)).size());
+    assertEquals(1, model.getEventsOn(LocalDate.of(2025, 6,
+            9)).size());
+    assertEquals(0, model.getEventsOn(LocalDate.of(2025, 6,
+            10)).size());
   }
 
   /**
@@ -133,7 +140,8 @@ public class CalendarModelTest {
   public void testIsDuplicateDetection() {
     LocalDateTime start = LocalDateTime.of(2025, 6, 12, 10, 0);
     LocalDateTime end = LocalDateTime.of(2025, 6, 12, 11, 0);
-    model.createEvent("Pitch", start, end, "Presenting", EventStatus.PUBLIC, "Main Hall");
+    model.createEvent("Pitch", start, end, "Presenting", EventStatus.PUBLIC,
+            "Main Hall");
     assertTrue(model.isDuplicate("Pitch", start, end));
     assertFalse(model.isDuplicate("Pitch", start.minusHours(1), end));
   }

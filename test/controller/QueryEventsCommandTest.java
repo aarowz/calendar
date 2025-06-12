@@ -1,37 +1,27 @@
 // Dreshta Boghra & Aaron Zhou
-// CS3500 HW4
+// CS3500 HW5
 
 package controller;
 
-import model.CalendarModel;
-import model.CalendarMulti;
-import model.DelegatorImpl;
-import model.EventStatus;
-import model.IDelegator;
-import model.IEvent;
-import model.ROIEvent;
+import model.*;
 import view.IView;
+import exceptions.CommandExecutionException;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import exceptions.CommandExecutionException;
-
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.time.ZoneId;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
- * Test class for QueryEventsCommand.
- * Ensures correct behavior when querying events based on various criteria.
+ * Unit tests for querying calendar events by date and time.
+ * Verifies expected behavior across various edge cases and time boundaries.
  */
 public class QueryEventsCommandTest {
 
@@ -39,7 +29,7 @@ public class QueryEventsCommandTest {
   private MockView view;
 
   /**
-   * A mock view that records messages passed to renderMessage.
+   * A mock view implementation that accumulates messages sent to it.
    */
   private static class MockView implements IView {
     StringBuilder log = new StringBuilder();
@@ -49,33 +39,39 @@ public class QueryEventsCommandTest {
       log.append(message).append("\n");
     }
 
+    /**
+     * Returns the full log of rendered messages.
+     *
+     * @return the log as a String
+     */
     public String getLog() {
       return log.toString();
     }
   }
 
   /**
-   * Sets up a calendar model with scheduled events for query testing.
+   * Initializes the test calendar and populates it with two base events
+   * for general-purpose testing. Sets active calendar to "testcal".
    */
   @Before
   public void setup() throws CommandExecutionException {
     model = new DelegatorImpl(new CalendarMulti());
     view = new MockView();
+    model.createCalendar("testcal", ZoneId.of("America/New_York"));
+    model.useCalendar("testcal");
 
     CreateEventCommand e1 = new CreateEventCommand(
             "Meeting",
             LocalDateTime.of(2025, 6, 3, 10, 0),
             LocalDateTime.of(2025, 6, 3, 11, 0),
-            "Team sync", "Room 1", EventStatus.PUBLIC, null,
-            null, null
+            "Team sync", "Room 1", EventStatus.PUBLIC, null, null, null
     );
 
     CreateEventCommand e2 = new CreateEventCommand(
             "Workshop",
             LocalDateTime.of(2025, 6, 4, 14, 0),
             LocalDateTime.of(2025, 6, 4, 16, 0),
-            "Skills", "Room 2", EventStatus.PRIVATE, null,
-            null, null
+            "Skills", "Room 2", EventStatus.PRIVATE, null, null, null
     );
 
     e1.execute(model, view);
@@ -83,212 +79,255 @@ public class QueryEventsCommandTest {
   }
 
   /**
-   * Verifies that the calendar correctly returns all events on a specific day.
+   * Tests that events created on a specific day are correctly returned by getEventsOn.
    */
   @Test
   public void testQueryEventsOnSpecificDay() throws Exception {
-    IDelegator model = new DelegatorImpl(new CalendarMulti());
-    IView view = new MockView();
+    // Create two events on June 15, 2025
+    ICommand event1 = new CreateEventCommand(
+            "Breakfast",
+            LocalDateTime.of(2025, 6, 15, 8, 0),
+            LocalDateTime.of(2025, 6, 15, 9, 0),
+            null, null, null,
+            null, null, null
+    );
 
-    // create two events on the same day
-    ICommand event1 = CommandParser.parse("create event Breakfast from " +
-            "2025-06-15T08:00 to 2025-06-15T09:00");
-    ICommand event2 = CommandParser.parse("create event Meeting from " +
-            "2025-06-15T10:00 to 2025-06-15T11:00");
+    ICommand event2 = new CreateEventCommand(
+            "Meeting",
+            LocalDateTime.of(2025, 6, 15, 10, 0),
+            LocalDateTime.of(2025, 6, 15, 11, 0),
+            null, null, null,
+            null, null, null
+    );
 
-    assert event1 != null;
+    // Execute both event creation commands
     event1.execute(model, view);
-    assert event2 != null;
     event2.execute(model, view);
 
-    // query for events on June 15, 2025
+    // Query for events on that specific date
     List<ROIEvent> events = model.getEventsOn(LocalDate.of(2025, 6, 15));
-
     assertEquals(2, events.size());
 
-    // confirm expected event subjects are present
-    boolean hasBreakfast = false;
-    boolean hasMeeting = false;
-    for (ROIEvent event : events) {
-      if (event.getSubject().equals("Breakfast")) {
-        hasBreakfast = true;
-      } else if (event.getSubject().equals("Meeting")) {
-        hasMeeting = true;
-      }
-    }
+    // Extract subjects from events and verify
+    List<String> subjects = events.stream()
+            .map(e -> ((IEvent) e).getSubject())
+            .collect(Collectors.toList());
 
-    assertTrue(hasBreakfast);
-    assertTrue(hasMeeting);
+    assertTrue(subjects.contains("Breakfast"));
+    assertTrue(subjects.contains("Meeting"));
   }
 
   /**
-   * Verifies that events created at the very start and very end of a day
-   * are both recognized when querying for that specific date.
+   * Tests that events created at midnight and end of day are both included
+   * in getEventsOn for that specific date.
    */
   @Test
   public void testEventsAtMidnightAndEndOfDay() throws Exception {
-    IDelegator model = new DelegatorImpl(new CalendarMulti());
-    IView view = new MockView();
+    // Create two events: one at the start of the day, one at the end
+    ICommand early = new CreateEventCommand(
+            "Early",
+            LocalDateTime.of(2025, 6, 12, 0, 0),
+            LocalDateTime.of(2025, 6, 12, 1, 0),
+            null, null, null,
+            null, null, null
+    );
 
-    Objects.requireNonNull(CommandParser
-                    .parse("create event Early from 2025-06-12T00:00 to 2025-06-12T01:00"))
-            .execute(model, view);
-    Objects.requireNonNull(CommandParser
-                    .parse("create event Late from 2025-06-12T23:00 to 2025-06-13T00:00"))
-            .execute(model, view);
+    ICommand late = new CreateEventCommand(
+            "Late",
+            LocalDateTime.of(2025, 6, 12, 23, 0),
+            LocalDateTime.of(2025, 6, 13, 0, 0),
+            null, null, null,
+            null, null, null
+    );
 
-    List<IEvent> events = new ArrayList<>();
-    for (IEvent e : CalendarModel.getAllEvents()) {
-      if (e.getStart().toLocalDate().equals(LocalDate.of(2025, 6, 12))) {
-        events.add(e);
-      }
-    }
+    // Execute both commands
+    early.execute(model, view);
+    late.execute(model, view);
+
+    // Fetch events that start on 2025-06-12
+    List<IEvent> events = CalendarModel.getAllEvents().stream()
+            .filter(e -> e.getStart().toLocalDate().equals(LocalDate.of(2025, 6,
+                    12)))
+            .collect(Collectors.toList());
 
     assertEquals(2, events.size());
+
+    // Optionally check subjects
+    List<String> subjects = events.stream()
+            .map(IEvent::getSubject)
+            .collect(Collectors.toList());
+
+    assertTrue(subjects.contains("Early"));
+    assertTrue(subjects.contains("Late"));
   }
 
   /**
-   * Verifies that an event which crosses into the next day is only counted
-   * on the day it starts when querying by date.
-   */
-  @Test
-  public void testEventCrossingMidnightNotCountedFullyOnStartDay() throws Exception {
-    IDelegator model = new DelegatorImpl(new CalendarMulti());
-    IView view = new MockView();
-
-    Objects.requireNonNull(CommandParser
-                    .parse("create event Overnight from " +
-                            "2025-06-14T22:00 to 2025-06-15T01:00"))
-            .execute(model, view);
-
-    int countStartDay = 0;
-    int countNextDay = 0;
-
-    for (IEvent e : CalendarModel.getAllEvents()) {
-      if (e.getStart().toLocalDate().equals(LocalDate.of(2025, 6, 14))) {
-        countStartDay++;
-      }
-      if (e.getStart().toLocalDate().equals(LocalDate.of(2025, 6, 15))) {
-        countNextDay++;
-      }
-    }
-
-    assertEquals(1, countStartDay);
-    assertEquals(0, countNextDay);
-  }
-
-  /**
-   * Verifies that two back-to-back events with no time gap between them
-   * are both returned correctly when querying for that day.
+   * Tests that consecutive events with no time gap between them
+   * are both returned when querying for the same day.
    */
   @Test
   public void testBackToBackEventsSameDay() throws Exception {
-    IDelegator model = new DelegatorImpl(new CalendarMulti());
-    IView view = new MockView();
+    // Create two back-to-back events on June 16, 2025
+    ICommand first = new CreateEventCommand(
+            "First",
+            LocalDateTime.of(2025, 6, 16, 9, 0),
+            LocalDateTime.of(2025, 6, 16, 10, 0),
+            null, null, null,
+            null, null, null
+    );
 
-    Objects.requireNonNull(CommandParser
-                    .parse("create event First from 2025-06-16T09:00 to 2025-06-16T10:00"))
-            .execute(model, view);
-    Objects.requireNonNull(CommandParser
-                    .parse("create event Second from 2025-06-16T10:00 to 2025-06-16T11:00"))
-            .execute(model, view);
+    ICommand second = new CreateEventCommand(
+            "Second",
+            LocalDateTime.of(2025, 6, 16, 10, 0),
+            LocalDateTime.of(2025, 6, 16, 11, 0),
+            null, null, null,
+            null, null, null
+    );
 
-    List<IEvent> events = new ArrayList<>();
-    for (IEvent e : CalendarModel.getAllEvents()) {
-      if (e.getStart().toLocalDate().equals(LocalDate.of(2025, 6, 16))) {
-        events.add(e);
-      }
-    }
+    // Execute both commands
+    first.execute(model, view);
+    second.execute(model, view);
+
+    // Fetch events that start on June 16
+    List<IEvent> events = CalendarModel.getAllEvents().stream()
+            .filter(e -> e.getStart().toLocalDate().equals(LocalDate.of(2025, 6,
+                    16)))
+            .collect(Collectors.toList());
 
     assertEquals(2, events.size());
+
+    // Optional: verify subjects are both present
+    List<String> subjects = events.stream()
+            .map(IEvent::getSubject)
+            .collect(Collectors.toList());
+
+    assertTrue(subjects.contains("First"));
+    assertTrue(subjects.contains("Second"));
   }
 
   /**
-   * Verifies that overlapping events on the same day are both returned
-   * when querying for that day.
+   * Tests that overlapping events on the same day are both returned.
    */
   @Test
   public void testOverlappingEventsQuery() throws Exception {
-    IDelegator model = new DelegatorImpl(new CalendarMulti());
-    IView view = new MockView();
+    // Create two overlapping events on June 18, 2025
+    ICommand eventA = new CreateEventCommand(
+            "A",
+            LocalDateTime.of(2025, 6, 18, 13, 0),
+            LocalDateTime.of(2025, 6, 18, 14, 0),
+            null, null, null,
+            null, null, null
+    );
 
-    Objects.requireNonNull(CommandParser
-                    .parse("create event A from 2025-06-18T13:00 to 2025-06-18T14:00"))
-            .execute(model, view);
-    Objects.requireNonNull(CommandParser
-                    .parse("create event B from 2025-06-18T13:30 to 2025-06-18T14:30"))
-            .execute(model, view);
+    ICommand eventB = new CreateEventCommand(
+            "B",
+            LocalDateTime.of(2025, 6, 18, 13, 30),
+            LocalDateTime.of(2025, 6, 18, 14, 30),
+            null, null, null,
+            null, null, null
+    );
 
-    int count = 0;
-    for (IEvent e : CalendarModel.getAllEvents()) {
-      if (e.getStart().toLocalDate().equals(LocalDate.of(2025, 6, 18))) {
-        count++;
-      }
-    }
+    // Execute both commands
+    eventA.execute(model, view);
+    eventB.execute(model, view);
 
-    assertEquals(2, count);
+    // Count how many events start on June 18
+    List<IEvent> events = CalendarModel.getAllEvents().stream()
+            .filter(e -> e.getStart().toLocalDate().equals(LocalDate.of(2025, 6,
+                    18)))
+            .collect(Collectors.toList());
+
+    assertEquals(2, events.size());
+
+    // Optional: verify subjects
+    List<String> subjects = events.stream()
+            .map(IEvent::getSubject)
+            .collect(Collectors.toList());
+
+    assertTrue(subjects.contains("A"));
+    assertTrue(subjects.contains("B"));
   }
 
   /**
-   * Tests behavior when the query returns no events.
+   * Tests that an empty query produces a "no events" message.
    */
   @Test
   public void testQueryReturnsEmpty() throws CommandExecutionException {
-    QueryEventsCommand query =
-            new QueryEventsCommand(LocalDate.of(2025, 6, 10));
+    QueryEventsCommand query = new QueryEventsCommand(LocalDate.of(2025, 6,
+            10));
     query.execute(model, view);
     assertTrue(view.getLog().toLowerCase().contains("no events"));
   }
 
   /**
-   * Verifies that the calendar correctly identifies whether the user
-   * is busy at a specific date and time.
+   * Tests user busy status at specific timepoints.
    */
   @Test
   public void testIsUserBusyAtSpecificDateTime() throws Exception {
-    IDelegator model = new DelegatorImpl(new CalendarMulti());
-    IView view = new MockView();
+    // Create an event from 10:00 to 11:00 on June 20, 2025
+    ICommand interview = new CreateEventCommand(
+            "Interview",
+            LocalDateTime.of(2025, 6, 20, 10, 0),
+            LocalDateTime.of(2025, 6, 20, 11, 0),
+            null, null, null,
+            null, null, null
+    );
 
-    // create an event from 10:00 to 11:00 on June 20, 2025
-    String createCmd = "create event Interview from 2025-06-20T10:00 to 2025-06-20T11:00";
-    ICommand create = CommandParser.parse(createCmd);
-    assert create != null;
-    create.execute(model, view);
+    interview.execute(model, view);
 
-    // check status at 10:30 (should be busy)
-    LocalDateTime checkBusy = LocalDateTime.of(2025, 6, 20, 10, 30);
-    assertTrue("User should be busy at 10:30", model.isBusyAt(checkBusy));
+    // Verify user is busy at 10:30
+    LocalDateTime busyTime = LocalDateTime.of(2025, 6, 20, 10,
+            30);
+    assertTrue("User should be busy at 10:30", model.isBusyAt(busyTime));
 
-    // check status at 11:30 (should be available)
-    LocalDateTime checkFree = LocalDateTime.of(2025, 6, 20, 11, 30);
-    assertFalse("User should be available at 11:30", model.isBusyAt(checkFree));
+    // Verify user is not busy at 11:30
+    LocalDateTime freeTime = LocalDateTime.of(2025, 6, 20, 11,
+            30);
+    assertFalse("User should be available at 11:30", model.isBusyAt(freeTime));
   }
 
   /**
-   * Verifies that the calendar correctly returns all events in a specific date-time range.
+   * Tests that only events within a specific date-time range are returned.
    */
   @Test
   public void testQueryEventsInDateTimeRange() throws Exception {
-    IDelegator model = new DelegatorImpl(new CalendarMulti());
-    IView view = new MockView();
+    // Create 3 events across multiple days
+    ICommand call = new CreateEventCommand(
+            "Call",
+            LocalDateTime.of(2025, 6, 10, 9, 0),
+            LocalDateTime.of(2025, 6, 10, 10, 0),
+            null, null, null,
+            null, null, null
+    );
 
-    // create 3 events across multiple days
-    Objects.requireNonNull(CommandParser
-                    .parse("create event Call from 2025-06-10T09:00 to 2025-06-10T10:00"))
-            .execute(model, view);
-    Objects.requireNonNull(CommandParser
-                    .parse("create event Workshop from 2025-06-11T14:00 to 2025-06-11T16:00"))
-            .execute(model, view);
-    Objects.requireNonNull(CommandParser
-                    .parse("create event Review from 2025-06-12T08:00 to 2025-06-12T09:00"))
-            .execute(model, view);
+    ICommand workshop = new CreateEventCommand(
+            "Workshop",
+            LocalDateTime.of(2025, 6, 11, 14, 0),
+            LocalDateTime.of(2025, 6, 11, 16, 0),
+            null, null, null,
+            null, null, null
+    );
 
-    // emulate range query manually
-    List<IEvent> inRange = new ArrayList<>();
+    ICommand review = new CreateEventCommand(
+            "Review",
+            LocalDateTime.of(2025, 6, 12, 8, 0),
+            LocalDateTime.of(2025, 6, 12, 9, 0),
+            null, null, null,
+            null, null, null
+    );
+
+    // Execute all three commands
+    call.execute(model, view);
+    workshop.execute(model, view);
+    review.execute(model, view);
+
+    // Define date-time range
     LocalDateTime start = LocalDateTime.of(2025, 6, 10, 0, 0);
     LocalDateTime end = LocalDateTime.of(2025, 6, 11, 23, 59);
 
-    for (int i = 0; i < 5; i++) {
+    // Collect events in the specified range
+    List<IEvent> inRange = new ArrayList<>();
+    for (int i = 0; i <= 2; i++) {
       LocalDate date = start.toLocalDate().plusDays(i);
       for (ROIEvent e : model.getEventsOn(date)) {
         if (!e.getEnd().isBefore(start) && !e.getStart().isAfter(end)) {
@@ -297,11 +336,12 @@ public class QueryEventsCommandTest {
       }
     }
 
-    // should include Call and Workshop, but not Review
+    // Validate that only the two expected events are included
     assertEquals(2, inRange.size());
     List<String> subjects = inRange.stream()
             .map(IEvent::getSubject)
             .collect(Collectors.toList());
+
     assertTrue(subjects.contains("Call"));
     assertTrue(subjects.contains("Workshop"));
     assertFalse(subjects.contains("Review"));

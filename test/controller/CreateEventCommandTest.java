@@ -1,47 +1,33 @@
 // Dreshta Boghra & Aaron Zhou
-// CS3500 HW4
+// CS3500 HW5
 
 package controller;
 
-import model.CalendarModel;
-import model.CalendarMulti;
-import model.DelegatorImpl;
-import model.EventStatus;
-import model.ICalendar;
-import model.IDelegator;
-import model.IEvent;
-import model.ROIEvent;
+import model.*;
 import view.IView;
+import exceptions.CommandExecutionException;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import exceptions.CommandExecutionException;
-
-import java.io.IOException;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
- * Test class for the CreateEventCommand.
- * This suite verifies behavior for creating both single and recurring events,
- * ensuring proper interactions with the calendar model and expected side effects.
+ * Test suite for the {@link CreateEventCommand}.
+ * Verifies correct creation and behavior of single and recurring events,
+ * with and without optional fields, as well as edge cases like duplicate creation
+ * and proper time boundaries for recurrence.
  */
 public class CreateEventCommandTest {
   private IDelegator model;
   private MockView view;
 
   /**
-   * A mock view that records messages passed to renderMessage.
-   * Used to verify command output during testing.
+   * A mock view that logs all messages passed to {@code renderMessage}.
    */
   private static class MockView implements IView {
     StringBuilder log = new StringBuilder();
@@ -51,28 +37,24 @@ public class CreateEventCommandTest {
       log.append(message).append("\n");
     }
 
-    /**
-     * Returns all messages recorded by the mock view.
-     *
-     * @return rendered message log as a string
-     */
     public String getLog() {
       return log.toString();
     }
   }
 
   /**
-   * Initializes a fresh CalendarModel and MockView before each test.
+   * Sets up a Delegator with a default calendar and view before each test.
    */
   @Before
   public void setup() {
     model = new DelegatorImpl(new CalendarMulti());
+    model.createCalendar("testcal", ZoneId.of("America/New_York"));
+    model.useCalendar("testcal");
     view = new MockView();
   }
 
   /**
-   * Verifies that executing the command creates a single, non-recurring event
-   * and produces the expected success message.
+   * Tests creation of a single one-time event and validates its presence and log output.
    */
   @Test
   public void testExecuteCreatesSingleEvent() throws CommandExecutionException {
@@ -80,8 +62,7 @@ public class CreateEventCommandTest {
             "Team Meeting",
             LocalDateTime.of(2025, 6, 6, 10, 0),
             LocalDateTime.of(2025, 6, 6, 11, 0),
-            null, null, EventStatus.PUBLIC, null, null,
-            null
+            null, null, EventStatus.PUBLIC, null, null, null
     );
     cmd.execute(model, view);
     List<IEvent> events = CalendarModel.getAllEvents();
@@ -91,28 +72,27 @@ public class CreateEventCommandTest {
   }
 
   /**
-   * Verifies that a series is created and repeats for a certain number of occurrences.
+   * Verifies that a recurring event series set to repeat for a fixed number of times
+   * is created and all generated events match the expected pattern.
    */
   @Test
   public void testSeriesRepeatsNTimes() throws Exception {
     IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new MockView();
+    model.createCalendar("testcal", ZoneId.of("America/New_York"));
+    model.useCalendar("testcal");
 
-    // command to repeat 5 times on Mondays and Wednesdays
-    String input = "create event StudySession from 2025-06-02T13:00 to " +
-            "2025-06-02T14:00 repeats MW for 5 times";
-    ICommand command = CommandParser.parse(input);
+    String input = "create event StudySession from 2025-06-02T13:00 to 2025-06-02T14:00 repeats MW for 5 times";
+    ICommand command = CommandParser.parse(model, input);
     assertNotNull(command);
     command.execute(model, view);
 
-    // gather events from the month of June
     List<ROIEvent> allEvents = new ArrayList<>();
     for (int i = 0; i < 30; i++) {
       LocalDate date = LocalDate.of(2025, 6, 1).plusDays(i);
       allEvents.addAll(model.getEventsOn(date));
     }
 
-    // verify each has the correct subject and time range
     for (ROIEvent event : allEvents) {
       assertEquals("StudySession", event.getSubject());
       assertEquals(13, event.getStart().getHour());
@@ -121,8 +101,8 @@ public class CreateEventCommandTest {
   }
 
   /**
-   * Verifies that a recurring event with a repeat count creates
-   * the correct number of events and logs the correct message.
+   * Tests that a recurring event series set to repeat for a count
+   * actually creates the correct number of event instances.
    */
   @Test
   public void testExecuteCreatesRecurringEventWithCount() throws CommandExecutionException {
@@ -140,8 +120,8 @@ public class CreateEventCommandTest {
   }
 
   /**
-   * Verifies that a recurring event with a repeat-until date
-   * creates events up to the correct end date and logs the event.
+   * Tests that a recurring event series set to repeat until a specific end date
+   * only includes events up to and including that date.
    */
   @Test
   public void testExecuteCreatesRecurringEventWithUntilDate() throws CommandExecutionException {
@@ -160,8 +140,7 @@ public class CreateEventCommandTest {
   }
 
   /**
-   * Verifies that the command works when optional fields like
-   * description and location are missing.
+   * Verifies that an event can be created with only required fields present.
    */
   @Test
   public void testExecuteWithMissingOptionalFields() throws CommandExecutionException {
@@ -169,8 +148,7 @@ public class CreateEventCommandTest {
             "Solo Work",
             LocalDateTime.of(2025, 6, 7, 14, 0),
             LocalDateTime.of(2025, 6, 7, 16, 0),
-            null, null, EventStatus.PRIVATE, null, null,
-            null
+            null, null, EventStatus.PRIVATE, null, null, null
     );
     cmd.execute(model, view);
     List<IEvent> events = CalendarModel.getAllEvents();
@@ -179,54 +157,47 @@ public class CreateEventCommandTest {
   }
 
   /**
-   * Verifies that a recurring event series is created and repeats
-   * until a specified end date (inclusive).
+   * Verifies that a recurring series stops at the correct 'until' date.
    */
   @Test
   public void testSeriesRepeatsUntilDate() throws Exception {
     IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new MockView();
+    model.createCalendar("testcal", ZoneId.of("America/New_York"));
+    model.useCalendar("testcal");
 
-    // command to repeat on Mondays and Wednesdays until 2025-06-12
-    String input = "create event Review from 2025-06-02T10:00 to " +
-            "2025-06-02T11:00 repeats MW until 2025-06-12";
-    ICommand command = CommandParser.parse(input);
+    String input = "create event Review from 2025-06-02T10:00 to 2025-06-02T11:00 repeats MW until 2025-06-12";
+    ICommand command = CommandParser.parse(model, input);
     assertNotNull(command);
     command.execute(model, view);
 
-    // scan through June 1–30 and collect events
     List<ROIEvent> allEvents = new ArrayList<>();
     for (int i = 0; i < 30; i++) {
       LocalDate date = LocalDate.of(2025, 6, 1).plusDays(i);
       allEvents.addAll(model.getEventsOn(date));
     }
 
-    // check that all events in series are in place
     for (ROIEvent e : allEvents) {
       assertEquals("Review", e.getSubject());
-      assertFalse("Event should not occur after 2025-06-12",
-              e.getStart().toLocalDate().isAfter(LocalDate.of(2025, 6, 12)));
+      assertFalse(e.getStart().toLocalDate().isAfter(LocalDate.of(2025, 6, 12)));
     }
   }
 
   /**
-   * Verifies that a single all-day event is created correctly,
-   * with default time from 8:00 AM to 5:00 PM.
+   * Verifies that an all-day event defaults to 8 AM to 5 PM.
    */
   @Test
   public void testCreateAllDayEvent() throws Exception {
     IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new MockView();
+    model.createCalendar("testcal", ZoneId.of("America/New_York"));
+    model.useCalendar("testcal");
 
-    // simulate command for an all-day event
     String input = "create event Workshop on 2025-06-07";
-    ICommand command = CommandParser.parse(input);
-
-    // execute the command on the model
-    assert command != null;
+    ICommand command = CommandParser.parse(model, input);
+    assertNotNull(command);
     command.execute(model, view);
 
-    // check that the event exists and uses 8:00 AM to 5:00 PM as default times
     List<ROIEvent> events = model.getEventsOn(LocalDate.of(2025, 6, 7));
     assertEquals(1, events.size());
 
@@ -237,8 +208,7 @@ public class CreateEventCommandTest {
   }
 
   /**
-   * Verifies that a duplicate event throws a CommandExecutionException
-   * when trying to add a second identical event.
+   * Ensures a duplicate event (same subject, start, end) is rejected.
    */
   @Test(expected = CommandExecutionException.class)
   public void testExecuteFailsGracefullyOnModelError() throws CommandExecutionException {
@@ -246,22 +216,20 @@ public class CreateEventCommandTest {
             "Duplicate",
             LocalDateTime.of(2025, 6, 6, 10, 0),
             LocalDateTime.of(2025, 6, 6, 11, 0),
-            null, null, EventStatus.PUBLIC, null, null,
-            null
+            null, null, EventStatus.PUBLIC, null, null, null
     );
     CreateEventCommand cmd2 = new CreateEventCommand(
             "Duplicate",
             LocalDateTime.of(2025, 6, 6, 10, 0),
             LocalDateTime.of(2025, 6, 6, 11, 0),
-            null, null, EventStatus.PUBLIC, null, null,
-            null
+            null, null, EventStatus.PUBLIC, null, null, null
     );
     cmd1.execute(model, view);
-    cmd2.execute(model, view); // should fail
+    cmd2.execute(model, view); // should throw
   }
 
   /**
-   * Verifies that executing a valid single event logs a correct message.
+   * Tests that success message for a single event is shown.
    */
   @Test
   public void testSuccessMessageSingleEvent() throws CommandExecutionException {
@@ -269,45 +237,40 @@ public class CreateEventCommandTest {
             "Briefing",
             LocalDateTime.of(2025, 6, 6, 11, 0),
             LocalDateTime.of(2025, 6, 6, 12, 0),
-            null, null, EventStatus.PUBLIC, null, null,
-            null
+            null, null, EventStatus.PUBLIC, null, null, null
     );
     cmd.execute(model, view);
     assertTrue(view.getLog().contains("Briefing"));
   }
 
   /**
-   * Verifies that each event in a recurring series starts and ends on the same day.
+   * Ensures that all events in a series start and end on the same day.
    */
   @Test
   public void testAllEventsInSeriesAreSameDay() throws Exception {
     IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new MockView();
+    model.createCalendar("testcal", ZoneId.of("America/New_York"));
+    model.useCalendar("testcal");
 
-    // create a series that repeats on Mondays and Wednesdays, 4 times
-    String input = "create event Class from 2025-06-02T09:00 to " +
-            "2025-06-02T10:00 repeats MW for 4 times";
-    ICommand command = CommandParser.parse(input);
+    String input = "create event Class from 2025-06-02T09:00 to 2025-06-02T10:00 repeats MW for 4 times";
+    ICommand command = CommandParser.parse(model, input);
     assertNotNull(command);
     command.execute(model, view);
 
-    // gather all events from a known date range
-    List<ROIEvent> allEvents = new java.util.ArrayList<>();
+    List<ROIEvent> allEvents = new ArrayList<>();
     for (int i = 0; i < 30; i++) {
       LocalDate date = LocalDate.of(2025, 6, 1).plusDays(i);
       allEvents.addAll(model.getEventsOn(date));
     }
 
-    // ensure each event starts and ends on the same day
     for (ROIEvent e : allEvents) {
-      assertEquals("Event start and end should be on the same day",
-              e.getStart().toLocalDate(), e.getEnd().toLocalDate());
+      assertEquals(e.getStart().toLocalDate(), e.getEnd().toLocalDate());
     }
   }
 
   /**
-   * Verifies that the toString() method includes the subject
-   * of the event for easy identification.
+   * Ensures the subject appears in the string representation.
    */
   @Test
   public void testToStringDisplaysSubject() {
@@ -315,39 +278,35 @@ public class CreateEventCommandTest {
             "Demo Day",
             LocalDateTime.of(2025, 6, 6, 16, 0),
             LocalDateTime.of(2025, 6, 6, 17, 0),
-            null, null, EventStatus.PRIVATE, null, null,
-            null
+            null, null, EventStatus.PRIVATE, null, null, null
     );
     assertTrue(cmd.toString().contains("Demo Day"));
   }
 
   /**
-   * Verifies that an event series repeats only on the specified weekdays (M and W).
+   * Ensures a recurring event only occurs on specified weekdays.
    */
   @Test
   public void testSeriesRepeatsOnExpectedWeekdays() throws Exception {
     IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new MockView();
+    model.createCalendar("testcal", ZoneId.of("America/New_York"));
+    model.useCalendar("testcal");
 
-    // command: Repeat 5 times on Mondays and Wednesdays
-    String input = "create event Seminar from 2025-06-02T15:00 " +
-            "to 2025-06-02T16:00 repeats MW for 5 times";
-    ICommand command = CommandParser.parse(input);
+    String input = "create event Seminar from 2025-06-02T15:00 to 2025-06-02T16:00 repeats MW for 5 times";
+    ICommand command = CommandParser.parse(model, input);
     assertNotNull(command);
     command.execute(model, view);
 
-    // collect events across June
     List<ROIEvent> allEvents = new ArrayList<>();
     for (int i = 0; i < 30; i++) {
       LocalDate date = LocalDate.of(2025, 6, 1).plusDays(i);
       allEvents.addAll(model.getEventsOn(date));
     }
 
-    // check that all five events are in place
     for (ROIEvent event : allEvents) {
       DayOfWeek day = event.getStart().getDayOfWeek();
-      assertTrue("Event should occur only on Monday or Wednesday",
-              day == DayOfWeek.MONDAY || day == DayOfWeek.WEDNESDAY);
+      assertTrue(day == DayOfWeek.MONDAY || day == DayOfWeek.WEDNESDAY);
     }
   }
 }

@@ -43,8 +43,10 @@ public class CalendarEventTest {
   public void testGetMethods() {
     CalendarEvent e = sampleEvent();
     assertEquals("Meeting", e.getSubject());
-    assertEquals(LocalDateTime.of(2025, 6, 5, 14, 0), e.getStart());
-    assertEquals(LocalDateTime.of(2025, 6, 5, 15, 0), e.getEnd());
+    assertEquals(LocalDateTime.of(2025, 6, 5, 14, 0),
+            e.getStart());
+    assertEquals(LocalDateTime.of(2025, 6, 5, 15, 0),
+            e.getEnd());
     assertEquals("Project discussion", e.getDescription());
     assertEquals(EventStatus.PUBLIC, e.getStatus());
     assertEquals("Room A", e.getLocation());

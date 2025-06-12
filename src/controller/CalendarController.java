@@ -28,12 +28,12 @@ public class CalendarController {
    *
    * @param model       the calendar model
    * @param view        the view used to render output
-   * @param inputStream the input stream for user input
+   * @param readable the input stream for user input
    */
-  public CalendarController(IDelegator model, IView view, InputStream inputStream) {
+  public CalendarController(IDelegator model, IView view, Readable readable) {
     this.model = model; // store the calendar model
     this.view = view; // store the view object
-    this.scanner = new Scanner(inputStream); // initialize scanner for input
+    this.scanner = new Scanner(readable); // initialize scanner for input
   }
 
   /**

@@ -1,7 +1,13 @@
 // Dreshta Boghra & Aaron Zhou
-// CS3500 HW4
+// CS3500 HW5
 
 package view;
+
+import controller.CommandParser;
+import controller.ICommand;
+import model.CalendarMulti;
+import model.DelegatorImpl;
+import model.IDelegator;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -9,18 +15,13 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-
-import controller.CommandParser;
-import controller.ICommand;
-import model.IDelegator;
-import model.DelegatorImpl;
-import model.CalendarMulti;
+import java.time.ZoneId;
 
 import static org.junit.Assert.assertTrue;
 
 /**
- * Stub test class for testing view functionality in the calendar application.
- * Each method includes a Javadoc describing its purpose according to spec.
+ * Test class for CalendarView functionality in the calendar application.
+ * Verifies the output behavior of the view across various display scenarios.
  */
 public class CalendarViewTest {
   private StringBuilder log;
@@ -53,26 +54,28 @@ public class CalendarViewTest {
   }
 
   /**
-   * Verifies that the 'print events on date command displays correct event details.
+   * Verifies that the 'print events on date' command displays correct event details.
    */
   @Test
   public void testPrintCommandDisplaysEventDetails() throws Exception {
     IDelegator model = new DelegatorImpl(new CalendarMulti());
     MockView view = new MockView();
 
-    // create an event on a specific date
+    // Set up calendar context
+    model.createCalendar("testcal", ZoneId.of("America/New_York"));
+    model.useCalendar("testcal");
+
+    // Create an event on a specific date
     String createCmd = "create event Workshop from 2025-06-25T14:00 to 2025-06-25T16:00";
-    ICommand create = CommandParser.parse(createCmd);
-    assert create != null;
+    ICommand create = CommandParser.parse(model, createCmd);
     create.execute(model, view);
 
-    // now query for events on that date
+    // Query events for that date
     String printCmd = "print events on 2025-06-25";
-    ICommand print = CommandParser.parse(printCmd);
-    assert print != null;
+    ICommand print = CommandParser.parse(model, printCmd);
     print.execute(model, view);
 
-    // verify output
+    // Verify output
     String output = view.getOutput().toLowerCase();
     assertTrue(output.contains("workshop"));
     assertTrue(output.contains("14:00"));

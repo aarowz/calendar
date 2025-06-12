@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertTrue;
@@ -65,7 +66,7 @@ public class CalendarControllerTest {
   public void testControllerIOCoupling() {
     try {
       String input = "create event Test from 2025-06-06T10:00 to 2025-06-06T11:00\nexit";
-      ByteArrayInputStream in = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
+      Readable in = new StringReader(input);  // use Readable not InputStream
       MockView view = new MockView();
 
       CalendarController controller = new CalendarController(model, view, in);
@@ -73,7 +74,7 @@ public class CalendarControllerTest {
 
       assertTrue(view.getLog().toLowerCase().contains("created"));
     } catch (Exception e) {
-      fail("Controller should not throw with mock I/O");
+      fail("Controller should not throw with mock I/O: " + e.getMessage());
     }
   }
 
@@ -83,7 +84,7 @@ public class CalendarControllerTest {
   @Test
   public void testControllerCommandExecution() {
     String input = "create event Review from 2025-06-07T13:00 to 2025-06-07T14:00\nexit";
-    ByteArrayInputStream in = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
+    Readable in = new StringReader(input);  // use Readable instead of InputStream
     MockView view = new MockView();
 
     CalendarController controller = new CalendarController(model, view, in);

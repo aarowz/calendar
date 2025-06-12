@@ -1,13 +1,11 @@
 // Dreshta Boghra & Aaron Zhou
-// CS3500 HW4
+// CS3500 HW5
 
 package controller;
 
 import exceptions.InvalidCommandException;
-import model.CalendarModel;
 import model.CalendarMulti;
 import model.DelegatorImpl;
-import model.ICalendar;
 import model.IDelegator;
 import view.CalendarView;
 import view.IView;
@@ -17,135 +15,161 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
+import java.time.ZoneId;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Test class for the CommandParser.
- * This class includes tests to verify correct parsing of valid commands,
- * handling of invalid input formats, recognition of known commands, and
- * validation of required arguments and edge cases.
+ * Verifies correct parsing of valid commands, recognition of syntax rules,
+ * and proper rejection of invalid or malformed input.
  */
 public class CommandParserTest {
 
-  /**
-   * Verifies that a well-formed 'create-event' command is parsed successfully.
-   */
   @Test
-  public void testParseCreateEventCommand() throws InvalidCommandException {
+  public void testParseCreateEventCommand() throws Exception {
+    // Arrange: Set up delegator and calendar
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
+    model.createCalendar("testcal", ZoneId.of("America/New_York"));
+    model.useCalendar("testcal");
+
+    // Act: Parse and evaluate command
     String input = "create event Meeting from 2025-06-03T10:00 to 2025-06-03T11:00";
-    ICommand cmd = CommandParser.parse(input);
-    assertTrue(cmd instanceof CreateEventCommand);
-    assertTrue(cmd.toString().toLowerCase().contains("meeting"));
+    ICommand cmd = CommandParser.parse(model, input);
+
+    // Assert: Confirm command type and content
+    assertTrue("Expected command to be a CreateEventCommand", cmd instanceof
+            CreateEventCommand);
+    assertTrue("Expected command to contain 'meeting'", cmd.toString().toLowerCase()
+            .contains("meeting"));
   }
 
-  /**
-   * Ensures that a recurring event creation command with repeat parameters is parsed as expected.
-   */
   @Test
-  public void testParseRecurringEventCommand() throws InvalidCommandException {
-    String input = "create event Standup from 2025-06-02T09:00 to 2025-06-02T09:30 " +
-            "repeats MWF for 3 times";
-    ICommand cmd = CommandParser.parse(input);
-    assertTrue(cmd instanceof CreateEventCommand);
-    assertTrue(cmd.toString().toLowerCase().contains("standup"));
+  public void testParseRecurringEventCommand() throws Exception {
+    // Arrange: Create and select a calendar
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
+    model.createCalendar("testcal", ZoneId.of("America/New_York"));
+    model.useCalendar("testcal");
+
+    // Act: Parse the recurring event creation command
+    String input = "create event Standup from 2025-06-02T09:00 to 2025-06-02T09:30 repeats MWF " +
+            "for 3 times";
+    ICommand cmd = CommandParser.parse(model, input);
+
+    // Assert: Validate command type and content
+    assertTrue("Expected a CreateEventCommand", cmd instanceof CreateEventCommand);
+    assertTrue("Expected command to include 'standup'", cmd.toString().toLowerCase()
+            .contains("standup"));
   }
 
-  /**
-   * Verifies that invalid commands result in an appropriate exception.
-   */
   @Test(expected = InvalidCommandException.class)
   public void testInvalidCommandThrows() throws InvalidCommandException {
-    CommandParser.parse("launch rocket now");
+    // Arrange: create a delegator and use a calendar (even though it's not needed for
+    // this invalid input)
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
+    model.createCalendar("testcal", ZoneId.of("America/New_York"));
+    model.useCalendar("testcal");
+
+    // Act: parse an invalid command
+    CommandParser.parse(model, "launch rocket now"); // should throw
   }
 
-  /**
-   * Verifies that a command with an invalid weekday character (e.g. 'Z') is rejected.
-   */
   @Test(expected = InvalidCommandException.class)
   public void testRejectInvalidWeekdayCharacters() throws InvalidCommandException {
-    String input = "created event Practice from 2025-06-02T08:00 to 2025-06-02T09:00 " +
-            "repeat MZ for 3 times"; // MZ is not valid since Z is not a weekday character
-    ICommand command = CommandParser.parse(input);
+    // Arrange: Create model and calendar
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
+    model.createCalendar("testcal", ZoneId.of("America/New_York"));
+    model.useCalendar("testcal");
+
+    // Act: parse command with invalid weekday 'Z' — should throw
+    String input = "create event Practice from 2025-06-02T08:00 to 2025-06-02T09:00 " +
+            "repeats MZ for 3 times";
+    CommandParser.parse(model, input); // should throw
   }
 
-  /**
-   * Ensures the parser reports an error when required fields are missing.
-   */
   @Test(expected = InvalidCommandException.class)
   public void testMissingRequiredFields() throws InvalidCommandException {
-    CommandParser.parse("created event onlysubject");
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
+    model.createCalendar("testcal", ZoneId.of("America/New_York"));
+    model.useCalendar("testcal");
+
+    CommandParser.parse(model, "create event Lunch");
   }
 
-  /**
-   * Confirms that unknown commands are rejected properly.
-   */
   @Test(expected = InvalidCommandException.class)
   public void testUnknownCommandFails() throws InvalidCommandException {
-    CommandParser.parse("explode event on 2025-06-06");
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
+    model.createCalendar("testcal", ZoneId.of("America/New_York"));
+    model.useCalendar("testcal");
+
+    CommandParser.parse(model, "explode event on 2025-06-06");
   }
 
-  /**
-   * Verifies that a command is rejected if the 'from' time is after the 'to' time.
-   */
   @Test(expected = InvalidCommandException.class)
   public void testRejectFromAfterToDates() throws InvalidCommandException {
-    // This should fail once validation is added to your parser
-    String input = "created event InvalidEvent from 2025-06-10T15:00 to 2025-06-10T14:00";
-    ICommand command = CommandParser.parse(input); // should throw
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
+    model.createCalendar("testcal", ZoneId.of("America/New_York"));
+    model.useCalendar("testcal");
+
+    String input = "create event InvalidEvent from 2025-06-10T15:00 to 2025-06-10T14:00";
+    CommandParser.parse(model, input);
   }
 
-  /**
-   * Verifies that quoted strings are correctly preserved during parsing.
-   */
   @Test
   public void testQuotedArgumentPreserved() throws InvalidCommandException {
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
+    model.createCalendar("testcal", ZoneId.of("America/New_York"));
+    model.useCalendar("testcal");
+
     String input = "create event \"Daily Check In\" from 2025-06-01T08:00 to 2025-06-01T08:15";
-    ICommand cmd = CommandParser.parse(input);
+    ICommand cmd = CommandParser.parse(model, input);
     assertTrue(cmd instanceof CreateEventCommand);
     assertTrue(cmd.toString().contains("Daily Check In"));
   }
 
-  /**
-   * Ensures that empty or null inputs result in a parsing error.
-   */
   @Test(expected = InvalidCommandException.class)
   public void testEmptyInputFails() throws InvalidCommandException {
-    CommandParser.parse(" ");
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
+    model.createCalendar("testcal", ZoneId.of("America/New_York"));
+    model.useCalendar("testcal");
+
+    CommandParser.parse(model, " ");
   }
 
   /**
-   * Ensures that the program stops running and identifies the error that caused it to stop.
+   * Ensures that the program handles an invalid command in a multi-line script,
+   * executes valid commands before it, and reports the error meaningfully.
    */
   @Test
   public void testInvalidCommandInScriptIsHandledAndReported() {
     String input = String.join("\n",
+            "create calendar --name testcal --timezone America/New_York",
+            "use calendar --name testcal",
             "create event Meeting from 2025-06-06T09:00 to 2025-06-06T10:00",
             "explode event on 2025-06-06",
             "exit"
     );
 
-    // set up printing
-    ByteArrayInputStream inputStream = new ByteArrayInputStream(input.getBytes());
+    // Wrap byte input stream with InputStreamReader to satisfy Readable
+    ByteArrayInputStream byteInput = new ByteArrayInputStream(input.getBytes());
+    Readable inputReader = new java.io.InputStreamReader(byteInput);
+
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     PrintWriter writer = new PrintWriter(outputStream, true);
 
-    // create new model and view instances
     IDelegator model = new DelegatorImpl(new CalendarMulti());
     IView view = new CalendarView.Builder()
             .setOutput(writer)
             .build();
 
-    // run the program
-    CalendarController controller = new CalendarController(model, view, inputStream);
+    CalendarController controller = new CalendarController(model, view, inputReader);
     controller.run();
 
-    String output = outputStream.toString();
+    String output = outputStream.toString().toLowerCase();
 
-    // check that the invalid command and a meaningful error message is printed
-    assertEquals(output, "Event created: Meeting\n" +
-            "\n" +
-            "Error: unknown or malformed command: explode\n");
+    assertTrue(output.contains("calendar created: testcal"));
+    assertTrue(output.contains("using calendar: testcal"));
+    assertTrue(output.contains("event created: meeting"));
+    assertTrue(output.contains("error: unknown or malformed command: explode"));
   }
 }

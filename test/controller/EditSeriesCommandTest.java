@@ -1,5 +1,5 @@
 // Dreshta Boghra & Aaron Zhou
-// CS3500 HW4
+// CS3500 HW5
 
 package controller;
 
@@ -16,21 +16,22 @@ import exceptions.CommandExecutionException;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
 /**
  * Test class for the EditSeriesCommand.
- * This class verifies the correct behavior when editing recurring event series,
- * including recurrence fields, edge conditions, and error handling.
+ * Verifies behavior when editing recurring event series, including valid edits,
+ * error conditions, and description correctness.
  */
 public class EditSeriesCommandTest {
   private IDelegator model;
   private MockView view;
 
   /**
-   * A mock view that records messages passed to renderMessage.
+   * A mock view that accumulates messages for verification.
    */
   private static class MockView implements IView {
     StringBuilder log = new StringBuilder();
@@ -42,12 +43,14 @@ public class EditSeriesCommandTest {
   }
 
   /**
-   * Sets up a calendar model with a recurring series.
+   * Sets up the calendar and a recurring "Checkin" series.
    */
   @Before
   public void setup() throws CommandExecutionException {
     model = new DelegatorImpl(new CalendarMulti());
     view = new MockView();
+    model.createCalendar("testcal", ZoneId.of("America/New_York"));
+    model.useCalendar("testcal");
 
     List<Character> days = List.of('M', 'W', 'F');
     CreateEventCommand cmd = new CreateEventCommand(
@@ -65,7 +68,7 @@ public class EditSeriesCommandTest {
   }
 
   /**
-   * Verifies that editing a non-existent series results in appropriate error handling.
+   * Verifies that attempting to edit a non-existent series throws an error.
    */
   @Test(expected = CommandExecutionException.class)
   public void testEditNonExistentSeriesFails() throws CommandExecutionException, IOException {
@@ -83,7 +86,7 @@ public class EditSeriesCommandTest {
   }
 
   /**
-   * Ensures the string representation of the command describes the target series.
+   * Verifies that the toString method includes the subject and series keyword.
    */
   @Test
   public void testToStringDescribesSeries() {
@@ -97,7 +100,9 @@ public class EditSeriesCommandTest {
             null,
             "public"
     );
-    assertTrue(edit.toString().toLowerCase().contains("checkin"));
-    assertTrue(edit.toString().toLowerCase().contains("series"));
+
+    String desc = edit.toString().toLowerCase();
+    assertTrue(desc.contains("checkin"));
+    assertTrue(desc.contains("series"));
   }
 }

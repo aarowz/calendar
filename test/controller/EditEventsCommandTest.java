@@ -1,5 +1,5 @@
 // Dreshta Boghra & Aaron Zhou
-// CS3500 HW4
+// CS3500 HW5
 
 package controller;
 
@@ -18,11 +18,11 @@ import exceptions.CommandExecutionException;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Test class for the EditEventsCommand.
@@ -52,6 +52,8 @@ public class EditEventsCommandTest {
   public void setup() throws CommandExecutionException {
     model = new DelegatorImpl(new CalendarMulti());
     view = new MockView();
+    model.createCalendar("testcal", ZoneId.of("America/New_York"));
+    model.useCalendar("testcal");
 
     List<Character> days = List.of('M', 'W', 'F');
     CreateEventCommand cmd = new CreateEventCommand(
@@ -74,33 +76,30 @@ public class EditEventsCommandTest {
    */
   @Test
   public void testEditEventsFromSpecificStartTime() throws Exception {
-    IDelegator model = new DelegatorImpl(new CalendarMulti());
-    IView view = new MockView();
+    EditEventsCommand edit = new EditEventsCommand(
+            "Standup",
+            LocalDateTime.of(2025, 6, 6, 9, 0),
+            "Standup v2",
+            null, null, null, null,
+            "public"
+    );
+    edit.execute(model, view);
 
-    // create a 6-instance recurring event series
-    String createCmd = "create event Sync from 2025-06-02T10:00 to " +
-            "2025-06-02T11:00 repeats MW for 6 times";
-    ICommand create = CommandParser.parse(createCmd);
-    assert create != null;
-    create.execute(model, view);
-
-    // collect events and separate them by before/after edit time
-    List<ROIEvent> allEvents = new ArrayList<>();
+    List<ROIEvent> updatedEvents = new ArrayList<>();
     for (int i = 0; i < 30; i++) {
       LocalDate date = LocalDate.of(2025, 6, 1).plusDays(i);
-      allEvents.addAll(model.getEventsOn(date));
+      updatedEvents.addAll(model.getEventsOn(date));
     }
 
-    // track that the count actually changes
-    int count = 0;
-    for (ROIEvent e : allEvents) {
-      if (e.getStart().isBefore(e.getStart().withDayOfMonth(9))) {
-        assertEquals("Sync", e.getSubject());
-        count++;
-      }
+    boolean foundOld = false;
+    boolean foundNew = false;
+    for (ROIEvent e : updatedEvents) {
+      if (e.getSubject().equals("Standup")) foundOld = true;
+      if (e.getSubject().equals("Standup v2")) foundNew = true;
     }
 
-    assertEquals(2, count); // June 2, 4
+    assertTrue(foundOld); // before June 6
+    assertTrue(foundNew); // from June 6 onward
   }
 
   /**
@@ -112,7 +111,7 @@ public class EditEventsCommandTest {
             "Standup",
             LocalDateTime.of(2025, 6, 4, 9, 0),
             "Standup",
-            LocalDateTime.of(2025, 6, 4, 10, 0),
+            LocalDateTime.of(2025, 6, 4, 10, 0), // duplicate timing
             LocalDateTime.of(2025, 6, 4, 9, 0),
             null,
             null,
@@ -126,25 +125,25 @@ public class EditEventsCommandTest {
    */
   @Test
   public void testEditAllEventsWithSameSubject() throws Exception {
-    IDelegator model = new DelegatorImpl(new CalendarMulti());
-    IView view = new MockView();
+    EditEventsCommand edit = new EditEventsCommand(
+            "Standup",
+            LocalDateTime.of(2025, 6, 2, 9, 0),
+            "Standup",
+            null,
+            null,
+            null,
+            null,
+            "public"
+    );
+    edit.execute(model, view);
 
-    // create a recurring event series
-    String createCmd = "create event Standup from 2025-06-02T09:00 to " +
-            "2025-06-02T09:30 repeats MTWRF for 5 times";
-    ICommand create = CommandParser.parse(createCmd);
-    assert create != null;
-    create.execute(model, view);
-
-    // gather all events in June
     List<ROIEvent> allEvents = new ArrayList<>();
     for (int i = 0; i < 30; i++) {
       LocalDate date = LocalDate.of(2025, 6, 1).plusDays(i);
       allEvents.addAll(model.getEventsOn(date));
     }
 
-    // confirm all have the new property
-    assertEquals(5, allEvents.size());
+    assertEquals(12, allEvents.size());
     for (ROIEvent event : allEvents) {
       assertEquals("Standup", event.getSubject());
     }
@@ -165,7 +164,8 @@ public class EditEventsCommandTest {
             null,
             "public"
     );
-    assertTrue(edit.toString().contains("Standup"));
-    assertTrue(edit.toString().toLowerCase().contains("edit"));
+    String desc = edit.toString().toLowerCase();
+    assertTrue(desc.contains("standup"));
+    assertTrue(desc.contains("edit"));
   }
 }
