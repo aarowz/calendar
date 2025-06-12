@@ -8,7 +8,10 @@ import org.junit.Test;
 
 import java.time.ZoneId;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * Unit tests for the {@link CalendarWrapper} class.
@@ -28,6 +31,10 @@ public class CalendarWrapperTest {
     wrapper = new CalendarWrapper("MyCalendar", ZoneId.of("America/New_York"),
             dummyCalendar);
   }
+
+  // ==============================
+  // Getter related wrapper tests
+  // ==============================
 
   /**
    * Tests that the wrapper correctly returns its name.
@@ -53,6 +60,10 @@ public class CalendarWrapperTest {
     assertSame(dummyCalendar, wrapper.getCalendar());
   }
 
+  // ==============================
+  // Miscellaneous wrapper tests
+  // ==============================
+
   /**
    * Tests that the toString method of the wrapper returns the correct format.
    */
@@ -73,6 +84,10 @@ public class CalendarWrapperTest {
     assertNotEquals(wrapper.getTimeZone(), other.getTimeZone());
     assertNotSame(wrapper.getCalendar(), other.getCalendar());
   }
+
+  // ==============================
+  // Null related wrapper tests
+  // ==============================
 
   /**
    * Tests that constructing a wrapper with a null calendar throws an exception.

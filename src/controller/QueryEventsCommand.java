@@ -53,29 +53,52 @@ public class QueryEventsCommand implements ICommand {
   public void execute(IDelegator model, IView view) throws CommandExecutionException {
     try {
       if (queryDate != null) {
-        // Query all events on a single date
+        // original logic for: print events on <date>
         List<ROIEvent> events = model.getEventsOn(queryDate);
-
         if (events.isEmpty()) {
           view.renderMessage("No events found on " + queryDate);
         } else {
           StringBuilder sb = new StringBuilder("Events on " + queryDate + ":\n");
           for (ROIEvent event : events) {
-            sb.append("- ").append(event.toString()).append("\n");
+            sb.append("- ").append(event.getSubject())
+                    .append(" from ").append(event.getStart())
+                    .append(" to ").append(event.getEnd());
+
+            if (event.getLocation() != null) {
+              System.out.println("entered null part of the if");
+              if (!event.getLocation().isEmpty()) {
+                System.out.println("entered empty part of the if");
+                sb.append(" at ").append(event.getLocation());
+              }
+
+            }
+            sb.append("\n");
           }
           view.renderMessage(sb.toString());
         }
-      } else {
-        // Query all events within a range
-        List<ROIEvent> events = model.getEventsBetween(rangeStart, rangeEnd);
 
+      } else if (rangeStart != null && rangeStart.equals(rangeEnd)) {
+        // new logic for: show status on <datetime>
+        boolean isBusy = model.isBusyAt(rangeStart);
+        view.renderMessage(isBusy ? "busy" : "available");
+
+      } else {
+        // original logic for: print events from <start> to <end>
+        List<ROIEvent> events = model.getEventsBetween(rangeStart, rangeEnd);
         if (events.isEmpty()) {
           view.renderMessage("No events found between " + rangeStart + " and " + rangeEnd);
         } else {
-          StringBuilder sb = new StringBuilder("Events from " + rangeStart +
-                  " to " + rangeEnd + ":\n");
+          StringBuilder sb = new StringBuilder("Events from " + rangeStart + " to "
+                  + rangeEnd + ":\n");
           for (ROIEvent event : events) {
-            sb.append("- ").append(event.toString()).append("\n");
+            sb.append("- ").append(event.getSubject())
+                    .append(" from ").append(event.getStart())
+                    .append(" to ").append(event.getEnd());
+
+            if (event.getLocation() != null && !event.getLocation().isEmpty()) {
+              sb.append(" at ").append(event.getLocation());
+            }
+            sb.append("\n");
           }
           view.renderMessage(sb.toString());
         }
@@ -86,6 +109,7 @@ public class QueryEventsCommand implements ICommand {
       throw new CommandExecutionException("Failed to query events: " + e.getMessage(), e);
     }
   }
+
 
   /**
    * Return a string representation of the output for debugging.

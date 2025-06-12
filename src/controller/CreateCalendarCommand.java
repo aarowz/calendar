@@ -18,7 +18,7 @@ public class CreateCalendarCommand implements ICommand {
   private final String zoneId;
 
   /**
-   * constructor that takes the calendar name and its timezone as strings
+   * Constructor that takes the calendar name and its timezone as strings.
    *
    * @param name   the name of the calendar to create
    * @param zoneId the IANA timezone string for the new calendar
@@ -43,5 +43,10 @@ public class CreateCalendarCommand implements ICommand {
       // wrap and rethrow any exceptions as a command-level error
       throw new CommandExecutionException("Failed to create calendar: " + e.getMessage());
     }
+  }
+
+  @Override
+  public String toString() {
+    return "CreateCalendarCommand: " + name + " (" + zoneId + ")";
   }
 }

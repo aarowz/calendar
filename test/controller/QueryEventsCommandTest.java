@@ -3,7 +3,13 @@
 
 package controller;
 
-import model.*;
+import model.IDelegator;
+import model.DelegatorImpl;
+import model.CalendarModel;
+import model.CalendarMulti;
+import model.ROIEvent;
+import model.EventStatus;
+import model.IEvent;
 import view.IView;
 import exceptions.CommandExecutionException;
 
@@ -14,10 +20,13 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Unit tests for querying calendar events by date and time.

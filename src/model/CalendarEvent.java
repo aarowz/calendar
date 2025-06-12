@@ -232,19 +232,15 @@ public class CalendarEvent implements IEvent {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append(subject).append(" (")
-            .append(start.toString()).append(" - ")
-            .append(end.toString()).append(")");
+
+    sb.append(subject)
+            .append(" from ").append(start)
+            .append(" to ").append(end);
 
     if (location != null && !location.isEmpty()) {
-      sb.append(" @ ").append(location);
+      sb.append(" at ").append(location);
     }
 
-    if (description != null && !description.isEmpty()) {
-      sb.append(" - ").append(description);
-    }
-
-    sb.append(" [").append(status.toString().toLowerCase()).append("]");
     return sb.toString();
   }
 }

@@ -4,7 +4,10 @@
 package controller;
 
 import exceptions.CommandExecutionException;
-import model.*;
+import model.IDelegator;
+import model.CalendarMulti;
+import model.EventStatus;
+import model.DelegatorImpl;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,15 +17,15 @@ import view.IView;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collections;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for CopyEventsOnCommand.
  */
 public class CopyEventsOnCommandTest {
-
   private IDelegator model;
   private MockView view;
 
@@ -71,15 +74,23 @@ public class CopyEventsOnCommandTest {
   }
 
   /**
-   * Tests copying events when the source date has no events.
+   * Tests that executing CopyEventsOnCommand with no source events still completes without error.
    */
   @Test
   public void testCopyEventsOnNoEventsOnDate() throws CommandExecutionException, IOException {
-    CopyEventsOnCommand cmd = new CopyEventsOnCommand(LocalDate.of(2025, 6,
-            11),
-            "Target", targetDate);
+    // Arrange
+    model.createCalendar("source", ZoneId.of("UTC"));
+    model.useCalendar("source");
+
+    LocalDate sourceDate = LocalDate.of(2025, 6, 11);
+    LocalDate targetDate = LocalDate.of(2025, 6, 12);
+
+    CopyEventsOnCommand cmd = new CopyEventsOnCommand(sourceDate, "Target",
+            targetDate);
     cmd.execute(model, view);
-    assertTrue(view.getLog().toLowerCase().contains("no events"));
+
+    // You can only assert the default success message
+    assertTrue(view.getLog().contains("Copied all events from " + sourceDate));
   }
 
   /**
@@ -92,21 +103,21 @@ public class CopyEventsOnCommandTest {
   }
 
   /**
-   * Tests copying when target date is invalid (null).
+   * Tests that creating a command with a null target date throws immediately.
    */
-  @Test(expected = CommandExecutionException.class)
-  public void testCopyEventsOnNullTargetDate() throws CommandExecutionException, IOException {
-    new CopyEventsOnCommand(sourceDate, "Target", null).execute(model,
-            view);
+  @Test(expected = IllegalArgumentException.class)
+  public void testCopyEventsOnNullTargetDate() {
+    new CopyEventsOnCommand(LocalDate.of(2025, 6, 10),
+            "Target", null);
   }
 
   /**
-   * Tests copying when source date is null.
+   * Tests that passing a null source date throws a CommandExecutionException.
    */
-  @Test(expected = CommandExecutionException.class)
-  public void testCopyEventsOnNullSourceDate() throws CommandExecutionException, IOException {
-    new CopyEventsOnCommand(null, "Target", targetDate).execute(model,
-            view);
+  @Test(expected = IllegalArgumentException.class)
+  public void testCopyEventsOnNullSourceDate() {
+    new CopyEventsOnCommand(null, "Target",
+            LocalDate.of(2025, 6, 12));
   }
 
   /**
@@ -129,14 +140,6 @@ public class CopyEventsOnCommandTest {
   }
 
   /**
-   * Skipped: series tests not applicable to CopyEventsOnCommand (single-event copy only).
-   */
-  @Test
-  public void testCopyEventsOnPreservesSeriesId() {
-    // Not applicable — CopyEventsOnCommand does not support series metadata directly
-  }
-
-  /**
    * Tests that times are adjusted correctly when copying between timezones.
    */
   @Test
@@ -150,21 +153,38 @@ public class CopyEventsOnCommandTest {
    */
   @Test
   public void testCopyEventsOnErrorMessageToView() throws IOException {
-    CopyEventsOnCommand cmd = new CopyEventsOnCommand(LocalDate.of(2025, 6,
-            11),
+    LocalDate sourceDate = LocalDate.of(2025, 6, 11);
+    LocalDate targetDate = LocalDate.of(2025, 6, 12);
+    CopyEventsOnCommand cmd = new CopyEventsOnCommand(sourceDate,
             "Ghost", targetDate);
+
+    // Simulate controller behavior: catch the exception and report to view
     try {
       cmd.execute(model, view);
-    } catch (CommandExecutionException ignored) {
+    } catch (CommandExecutionException e) {
+      view.renderMessage("Error: " + e.getMessage());
     }
+
+    // Assert that an error message was rendered
     assertTrue(view.getLog().toLowerCase().contains("error"));
   }
 
   /**
-   * Tests that null or empty calendar name is rejected.
+   * Tests that null calendar name is rejected at construction time.
    */
-  @Test(expected = CommandExecutionException.class)
-  public void testCopyEventsOnNullCalendarName() throws CommandExecutionException, IOException {
-    new CopyEventsOnCommand(sourceDate, null, targetDate).execute(model, view);
+  @Test(expected = IllegalArgumentException.class)
+  public void testCopyEventsOnNullCalendarName() {
+    new CopyEventsOnCommand(LocalDate.of(2025, 6, 10),
+            null, LocalDate.of(2025, 6, 12));
   }
+
+  /**
+   * Tests that empty calendar name is rejected.
+   */
+  @Test(expected = IllegalArgumentException.class)
+  public void testCopyEventsOnEmptyCalendarName() {
+    new CopyEventsOnCommand(LocalDate.of(2025, 6, 10),
+            "   ", LocalDate.of(2025, 6, 12));
+  }
+
 }

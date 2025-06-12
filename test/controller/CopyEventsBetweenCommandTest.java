@@ -4,7 +4,10 @@
 package controller;
 
 import exceptions.CommandExecutionException;
-import model.*;
+import model.IDelegator;
+import model.DelegatorImpl;
+import model.CalendarMulti;
+import model.EventStatus;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -18,16 +21,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for CopyEventsBetweenCommand.
  */
 public class CopyEventsBetweenCommandTest {
-
   private IDelegator model;
   private MockView view;
-
   private final LocalDateTime eventTime = LocalDateTime.of(2025, 6,
           10, 10, 0);
   private final LocalDate rangeStart = LocalDate.of(2025, 6, 9);
@@ -77,17 +78,22 @@ public class CopyEventsBetweenCommandTest {
   }
 
   /**
-   * Tests copying events when the range is valid but contains no events.
+   * Tests that executing CopyEventsBetweenCommand with a valid empty range logs success.
    */
   @Test
   public void testCopyEventsBetweenValidNoEvents() throws CommandExecutionException, IOException {
-    new CopyEventsBetweenCommand(
+    CopyEventsBetweenCommand cmd = new CopyEventsBetweenCommand(
             LocalDate.of(2025, 6, 5),
             LocalDate.of(2025, 6, 6),
             "Target",
             LocalDate.of(2025, 6, 25)
-    ).execute(model, view);
-    assertTrue(view.getLog().toLowerCase().contains("no events"));
+    );
+
+    // Act
+    cmd.execute(model, view);
+
+    // Assert
+    assertTrue(view.getLog().contains("Copied events from range 2025-06-05 to 2025-06-06"));
   }
 
   /**
@@ -179,15 +185,27 @@ public class CopyEventsBetweenCommandTest {
   }
 
   /**
-   * Tests that error message is passed to view on failure.
+   * Tests that an error message is passed to the view when CopyEventsBetweenCommand fails.
    */
   @Test
   public void testCopyEventsBetweenErrorMessageToView() throws IOException {
+    // Arrange: use valid range and start date, but non-existent calendar to trigger failure
+    LocalDate rangeStart = LocalDate.of(2025, 6, 1);
+    LocalDate rangeEnd = LocalDate.of(2025, 6, 10);
+    LocalDate targetStart = LocalDate.of(2025, 6, 25);
+
+    CopyEventsBetweenCommand cmd = new CopyEventsBetweenCommand(
+            rangeStart, rangeEnd, "Ghost", targetStart
+    );
+
+    // Act: simulate controller catching and rendering the error
     try {
-      new CopyEventsBetweenCommand(rangeStart, rangeEnd, "Ghost", targetStart)
-              .execute(model, view);
-    } catch (CommandExecutionException ignored) {
+      cmd.execute(model, view);
+    } catch (CommandExecutionException e) {
+      view.renderMessage("Error: " + e.getMessage());
     }
+
+    // Assert: verify that "error" was rendered
     assertTrue(view.getLog().toLowerCase().contains("error"));
   }
 

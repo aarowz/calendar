@@ -37,6 +37,12 @@ public class CalendarMulti implements ICalendarMulti {
 
   @Override
   public void createCalendar(String name, ZoneId timeZone) {
+    // if null name or name is empty
+    if (name == null || name.trim().isEmpty()) {
+      // throw exception
+      throw new IllegalArgumentException("Calendar name cannot be null or empty.");
+    }
+
     // if duplicate name
     if (calendars.containsKey(name)) {
       // calendar cannot be created
@@ -189,6 +195,18 @@ public class CalendarMulti implements ICalendarMulti {
   public void copyEvent(String eventName, LocalDateTime sourceStart, String targetCalendar,
                         LocalDateTime targetStart) {
     // check if a calendar is currently selected
+    if (eventName == null) {
+      throw new IllegalArgumentException("Event name cannot be null.");
+    }
+    if (sourceStart == null) {
+      throw new IllegalArgumentException("Source start time cannot be null.");
+    }
+    if (targetCalendar == null) {
+      throw new IllegalArgumentException("Target calendar name cannot be null.");
+    }
+    if (targetStart == null) {
+      throw new IllegalArgumentException("Target start time cannot be null.");
+    }
     if (activeCalendarName == null) {
       throw new IllegalStateException("No calendar is currently selected.");
     }
@@ -386,6 +404,12 @@ public class CalendarMulti implements ICalendarMulti {
   public void copyEventsBetween(LocalDate start, LocalDate end, String targetCalendar,
                                 LocalDate targetStartDate) {
     // check if a calendar is currently selected
+    if (start == null || end == null || targetCalendar == null || targetStartDate == null) {
+      throw new IllegalArgumentException("Arguments to copyEventsBetween(...) must not be null.");
+    }
+    if (start.isAfter(end)) {
+      throw new IllegalArgumentException("Start date cannot be after end date.");
+    }
     if (activeCalendarName == null) {
       throw new IllegalStateException("No calendar is currently selected.");
     }

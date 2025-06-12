@@ -22,7 +22,8 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test class for the EditEventsCommand.
@@ -94,8 +95,12 @@ public class EditEventsCommandTest {
     boolean foundOld = false;
     boolean foundNew = false;
     for (ROIEvent e : updatedEvents) {
-      if (e.getSubject().equals("Standup")) foundOld = true;
-      if (e.getSubject().equals("Standup v2")) foundNew = true;
+      if (e.getSubject().equals("Standup")) {
+        foundOld = true;
+      }
+      if (e.getSubject().equals("Standup v2")) {
+        foundNew = true;
+      }
     }
 
     assertTrue(foundOld); // before June 6

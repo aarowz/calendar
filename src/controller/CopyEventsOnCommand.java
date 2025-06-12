@@ -27,6 +27,16 @@ public class CopyEventsOnCommand implements ICommand {
    * @param targetDate     the date to copy events to in the target calendar
    */
   public CopyEventsOnCommand(LocalDate sourceDate, String targetCalendar, LocalDate targetDate) {
+    if (sourceDate == null) {
+      throw new IllegalArgumentException("Source date cannot be null.");
+    }
+    if (targetCalendar == null || targetCalendar.trim().isEmpty()) {
+      throw new IllegalArgumentException("Target calendar name cannot be null or empty.");
+    }
+    if (targetDate == null) {
+      throw new IllegalArgumentException("Target date cannot be null.");
+    }
+
     this.sourceDate = sourceDate;
     this.targetCalendar = targetCalendar;
     this.targetDate = targetDate;

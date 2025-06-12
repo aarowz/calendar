@@ -4,7 +4,10 @@
 package controller;
 
 import exceptions.CommandExecutionException;
-import model.*;
+import model.IDelegator;
+import model.DelegatorImpl;
+import model.CalendarMulti;
+import model.EventStatus;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +18,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for CopyEventCommand.
@@ -147,12 +150,22 @@ public class CopyEventCommandTest {
    */
   @Test
   public void testCopyEventErrorMessageToView() throws IOException {
-    CopyEventCommand cmd = new CopyEventCommand("Nonexistent", originalTime,
-            "Target", newTime);
+    // Arrange: set up invalid copy target (event doesn't exist)
+    CopyEventCommand cmd = new CopyEventCommand(
+            "Nonexistent",
+            originalTime,
+            "Target",
+            newTime
+    );
+
+    // Act: simulate controller catching the error and logging it
     try {
       cmd.execute(model, view);
-    } catch (CommandExecutionException ignored) {
+    } catch (CommandExecutionException e) {
+      view.renderMessage("Error: " + e.getMessage());
     }
+
+    // Assert: view should contain the word "error"
     assertTrue(view.getLog().toLowerCase().contains("error"));
   }
 

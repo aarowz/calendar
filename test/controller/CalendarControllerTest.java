@@ -12,10 +12,7 @@ import view.IView;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -60,19 +57,30 @@ public class CalendarControllerTest {
   }
 
   /**
-   * Tests whether controller/view are tightly coupled to I/O.
+   * Tests that the controller and view operate correctly over mock I/O.
    */
   @Test
   public void testControllerIOCoupling() {
     try {
-      String input = "create event Test from 2025-06-06T10:00 to 2025-06-06T11:00\nexit";
-      Readable in = new StringReader(input);  // use Readable not InputStream
+      // Arrange: full script with valid calendar setup
+      String input = String.join("\n",
+              "create calendar --name testcal --timezone America/New_York",
+              "use calendar --name testcal",
+              "create event Test from 2025-06-06T10:00 to 2025-06-06T11:00",
+              "exit"
+      );
+      Readable in = new StringReader(input);
       MockView view = new MockView();
+      IDelegator model = new DelegatorImpl(new CalendarMulti());
 
+      // Act
       CalendarController controller = new CalendarController(model, view, in);
       controller.run();
 
-      assertTrue(view.getLog().toLowerCase().contains("created"));
+      // Assert
+      String log = view.getLog().toLowerCase();
+      assertTrue(log.contains("created"));
+      assertTrue(log.contains("event"));
     } catch (Exception e) {
       fail("Controller should not throw with mock I/O: " + e.getMessage());
     }
@@ -83,9 +91,16 @@ public class CalendarControllerTest {
    */
   @Test
   public void testControllerCommandExecution() {
-    String input = "create event Review from 2025-06-07T13:00 to 2025-06-07T14:00\nexit";
-    Readable in = new StringReader(input);  // use Readable instead of InputStream
+    String input = String.join("\n",
+            "create calendar --name testcal --timezone America/New_York",
+            "use calendar --name testcal",
+            "create event Review from 2025-06-07T13:00 to 2025-06-07T14:00",
+            "exit"
+    );
+
+    Readable in = new StringReader(input);
     MockView view = new MockView();
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
 
     CalendarController controller = new CalendarController(model, view, in);
     controller.run();

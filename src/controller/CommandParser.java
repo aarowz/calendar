@@ -153,7 +153,7 @@ public class CommandParser {
   }
 
   /**
-   * Parses "show status on <datetime>" command.
+   * Parses show status on datetime command.
    */
   private static ICommand parseShow(List<String> tokens) throws InvalidCommandException {
     if (tokens.size() >= 4 && tokens.get(1).equals("status") && tokens.get(2).equals("on")) {
@@ -164,7 +164,7 @@ public class CommandParser {
   }
 
   /**
-   * Parses "use calendar --name <name>" command.
+   * Parses use calendar --name with input name command.
    */
   private static ICommand parseUse(List<String> tokens) throws InvalidCommandException {
     if (tokens.size() >= 4 &&
@@ -213,7 +213,7 @@ public class CommandParser {
   }
 
   /**
-   * Parses a "copy event <name> on <start> --target <calendar> to <targetStart>" command.
+   * Parses a "copy event name on start --target calendar to targetStart" command.
    *
    * @param tokens the tokenized user input
    * @return a CopyEventCommand with extracted values
@@ -246,7 +246,7 @@ public class CommandParser {
   }
 
   /**
-   * Parses "copy events on <date> --target <calendar> to <date>".
+   * Parses "copy events on date --target calendar to date".
    */
   private static ICommand parseCopyEventsOn(List<String> tokens) {
     LocalDate sourceDate = LocalDate.parse(tokens.get(3));
@@ -257,7 +257,7 @@ public class CommandParser {
   }
 
   /**
-   * Parses "copy events between <start> and <end> --target <calendar> to <target>".
+   * Parses "copy events between start and end --target calendar to target".
    */
   private static ICommand parseCopyEventsBetween(List<String> tokens) {
     LocalDate startDate = LocalDate.parse(tokens.get(3));
@@ -293,8 +293,8 @@ public class CommandParser {
   }
 
   /**
-   * Parses an all-day event command of the form:
-   * create event <subject> on <date> [repeats <days> for <n> | until <date>]
+   * Parses an all-day event command of the particular given form.
+   * Create event subject on date [repeats days for n | until date].
    */
   private static ICommand parseAllDayEvent(List<String> tokens, int onIndex) {
     String subject = extractSubject(tokens, onIndex);
@@ -308,8 +308,8 @@ public class CommandParser {
   }
 
   /**
-   * Parses a timed event command of the form:
-   * create event <subject> from <start> to <end> [repeats <days> for <n> | until <date>]
+   * Parses a timed event command of the given form.
+   * Create event subject from start to end [repeats days for n | until date].
    */
   private static ICommand parseTimedEvent(List<String> tokens) throws InvalidCommandException {
     int fromIndex = tokens.indexOf("from");
@@ -347,6 +347,12 @@ public class CommandParser {
       int repeatsIndex = tokens.indexOf("repeats");
       String dayString = tokens.get(repeatsIndex + 1);
       repeatDays = toCharList(dayString);
+
+      for (char c : repeatDays) {
+        if ("MTWRFSU".indexOf(c) == -1) {
+          throw new IllegalArgumentException("Invalid weekday character: " + c);
+        }
+      }
 
       if (tokens.contains("for")) {
         repeatCount = Integer.parseInt(tokens.get(tokens.indexOf("for") + 1));
@@ -558,6 +564,31 @@ public class CommandParser {
   }
 
   /**
+   * Validates the structure of an edit series or events command.
+   *
+   * @param tokens      the list of command tokens
+   * @param keywordType either "series" or "events" for error context
+   * @throws InvalidCommandException if required structure is missing
+   */
+  private static void validateEditSeriesTokens(List<String> tokens, String keywordType) throws
+          InvalidCommandException {
+    String base = "edit " + keywordType;
+
+    if (tokens.size() < 7 || !tokens.contains("from") || !tokens.contains("with")) {
+      throw new InvalidCommandException("Expected format: " + base + " <property> <subject> " +
+              "from <start> with <newValue>");
+    }
+
+    int fromIndex = tokens.indexOf("from");
+    int withIndex = tokens.indexOf("with");
+
+    if (fromIndex <= 3 || fromIndex + 1 >= tokens.size() || withIndex + 1 >= tokens.size()) {
+      throw new InvalidCommandException("Missing or malformed 'from' or 'with' clause in " +
+              base + " command");
+    }
+  }
+
+  /**
    * Extracts a quoted or unquoted string from a list of tokens.
    *
    * @param tokens the sublist of tokens to join and clean
@@ -648,31 +679,6 @@ public class CommandParser {
             .replaceAll("^\"|\"$", "");
 
     return buildEditSeriesCommand(model, property, subject, start, newValue);
-  }
-
-  /**
-   * Validates the structure of an edit series or events command.
-   *
-   * @param tokens      the list of command tokens
-   * @param keywordType either "series" or "events" for error context
-   * @throws InvalidCommandException if required structure is missing
-   */
-  private static void validateEditSeriesTokens(List<String> tokens, String keywordType) throws
-          InvalidCommandException {
-    String base = "edit " + keywordType;
-
-    if (tokens.size() < 7 || !tokens.contains("from") || !tokens.contains("with")) {
-      throw new InvalidCommandException("Expected format: " + base + " <property> <subject> " +
-              "from <start> with <newValue>");
-    }
-
-    int fromIndex = tokens.indexOf("from");
-    int withIndex = tokens.indexOf("with");
-
-    if (fromIndex <= 3 || fromIndex + 1 >= tokens.size() || withIndex + 1 >= tokens.size()) {
-      throw new InvalidCommandException("Missing or malformed 'from' or 'with' clause in " +
-              base + " command");
-    }
   }
 
   /**

@@ -3,18 +3,30 @@
 
 package controller;
 
-import model.*;
+import model.IDelegator;
+import model.EventStatus;
+import model.CalendarMulti;
+import model.DelegatorImpl;
+import model.IEvent;
+import model.CalendarModel;
+import model.ROIEvent;
 import view.IView;
 import exceptions.CommandExecutionException;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import java.time.*;
+import java.time.ZoneId;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Test suite for the {@link CreateEventCommand}.
@@ -82,7 +94,8 @@ public class CreateEventCommandTest {
     model.createCalendar("testcal", ZoneId.of("America/New_York"));
     model.useCalendar("testcal");
 
-    String input = "create event StudySession from 2025-06-02T13:00 to 2025-06-02T14:00 repeats MW for 5 times";
+    String input = "create event StudySession from 2025-06-02T13:00 to 2025-06-02T14:00 " +
+            "repeats MW for 5 times";
     ICommand command = CommandParser.parse(model, input);
     assertNotNull(command);
     command.execute(model, view);
@@ -166,7 +179,8 @@ public class CreateEventCommandTest {
     model.createCalendar("testcal", ZoneId.of("America/New_York"));
     model.useCalendar("testcal");
 
-    String input = "create event Review from 2025-06-02T10:00 to 2025-06-02T11:00 repeats MW until 2025-06-12";
+    String input = "create event Review from 2025-06-02T10:00 to 2025-06-02T11:00 " +
+            "repeats MW until 2025-06-12";
     ICommand command = CommandParser.parse(model, input);
     assertNotNull(command);
     command.execute(model, view);
@@ -253,7 +267,8 @@ public class CreateEventCommandTest {
     model.createCalendar("testcal", ZoneId.of("America/New_York"));
     model.useCalendar("testcal");
 
-    String input = "create event Class from 2025-06-02T09:00 to 2025-06-02T10:00 repeats MW for 4 times";
+    String input = "create event Class from 2025-06-02T09:00 to 2025-06-02T10:00 repeats " +
+            "MW for 4 times";
     ICommand command = CommandParser.parse(model, input);
     assertNotNull(command);
     command.execute(model, view);
@@ -293,7 +308,8 @@ public class CreateEventCommandTest {
     model.createCalendar("testcal", ZoneId.of("America/New_York"));
     model.useCalendar("testcal");
 
-    String input = "create event Seminar from 2025-06-02T15:00 to 2025-06-02T16:00 repeats MW for 5 times";
+    String input = "create event Seminar from 2025-06-02T15:00 to 2025-06-02T16:00 repeats " +
+            "MW for 5 times";
     ICommand command = CommandParser.parse(model, input);
     assertNotNull(command);
     command.execute(model, view);

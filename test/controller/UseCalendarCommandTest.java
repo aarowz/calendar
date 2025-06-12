@@ -15,7 +15,7 @@ import view.IView;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test class for the UseCalendarCommand.
@@ -23,7 +23,6 @@ import static org.junit.Assert.*;
  * and that invalid or malformed names are handled properly.
  */
 public class UseCalendarCommandTest {
-
   private IDelegator model;
   private MockView view;
 
@@ -101,10 +100,14 @@ public class UseCalendarCommandTest {
    */
   @Test
   public void testSwitchBetweenCalendars() throws CommandExecutionException, IOException {
+    // Act: switch between calendars
     new UseCalendarCommand("Work").execute(model, view);
     new UseCalendarCommand("Personal").execute(model, view);
-    assertTrue(view.getLog().contains("Using calendar: Work"));
-    assertTrue(view.getLog().contains("Using calendar: Personal"));
+
+    // Assert: log confirms each switch
+    String log = view.getLog();
+    assertTrue(log.contains("Now using calendar 'Work'"));
+    assertTrue(log.contains("Now using calendar 'Personal'"));
   }
 
   /**
@@ -120,7 +123,8 @@ public class UseCalendarCommandTest {
    * Tests that an IOException in the view is handled properly during use calendar.
    */
   @Test(expected = CommandExecutionException.class)
-  public void testUseCalendarViewThrowsIOException() throws CommandExecutionException, IOException {
+  public void testUseCalendarViewThrowsIOException() throws CommandExecutionException,
+          IOException {
     //always throws IOException
     IView failingView = new IView() {
       @Override

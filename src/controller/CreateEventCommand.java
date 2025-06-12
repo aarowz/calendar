@@ -48,6 +48,10 @@ public class CreateEventCommand implements ICommand {
                             String description, String location, EventStatus status,
                             List<Character> repeatDays, Integer repeatCount,
                             LocalDate repeatUntil) {
+    if (start.isAfter(end)) {
+      throw new IllegalArgumentException("Start time cannot be after end time.");
+    }
+
     this.subject = subject;
     this.start = start;
     this.end = end;

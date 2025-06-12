@@ -23,7 +23,6 @@ import static org.junit.Assert.assertTrue;
  * busy checks, and immutability of returned data.
  */
 public class CalendarModelTest {
-
   private ICalendar model;
 
   @Before

@@ -4,6 +4,7 @@
 package model;
 
 import java.time.ZoneId;
+import java.util.Objects;
 
 /**
  * Represents metadata and logic for a single calendar instance.
@@ -19,9 +20,9 @@ public class CalendarWrapper {
    * previously defined in assignment four.
    */
   public CalendarWrapper(String name, ZoneId timeZone, ICalendar calendar) {
-    this.name = name;
-    this.timeZone = timeZone;
-    this.calendar = calendar;
+    this.name = Objects.requireNonNull(name, "calendar name cannot be null");
+    this.timeZone = Objects.requireNonNull(timeZone, "time zone cannot be null");
+    this.calendar = Objects.requireNonNull(calendar, "calendar cannot be null");
   }
 
   /**

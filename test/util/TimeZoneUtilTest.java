@@ -238,7 +238,7 @@ public class TimeZoneUtilTest {
     LocalDateTime sourceStart =
             LocalDateTime.of(2025, 8, 10, 14, 0); // 2:00 PM JST
     LocalDateTime sourceEnd =
-            LocalDateTime.of(2025, 8, 10, 15, 0);   // 3:00 PM JST
+            LocalDateTime.of(2025, 8, 10, 15, 0); // 3:00 PM JST
 
     // build original event
     IEvent original = new CalendarEvent.Builder()
@@ -286,7 +286,7 @@ public class TimeZoneUtilTest {
     LocalDateTime sourceStart =
             LocalDateTime.of(2025, 7, 12, 0, 0);  // 00:00 UTC
     LocalDateTime sourceEnd =
-            LocalDateTime.of(2025, 7, 12, 1, 0);    // 01:00 UTC
+            LocalDateTime.of(2025, 7, 12, 1, 0);  // 01:00 UTC
 
     // create original event
     IEvent original = new CalendarEvent.Builder()

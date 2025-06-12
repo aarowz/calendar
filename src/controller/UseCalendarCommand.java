@@ -38,4 +38,9 @@ public class UseCalendarCommand implements ICommand {
       throw new CommandExecutionException("Failed to switch calendar: " + e.getMessage());
     }
   }
+
+  @Override
+  public String toString() {
+    return "UseCalendarCommand: " + name;
+  }
 }
