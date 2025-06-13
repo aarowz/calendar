@@ -53,55 +53,11 @@ public class QueryEventsCommand implements ICommand {
   public void execute(IDelegator model, IView view) throws CommandExecutionException {
     try {
       if (queryDate != null) {
-        // original logic for: print events on <date>
-        List<ROIEvent> events = model.getEventsOn(queryDate);
-        if (events.isEmpty()) {
-          view.renderMessage("No events found on " + queryDate);
-        } else {
-          StringBuilder sb = new StringBuilder("Events on " + queryDate + ":\n");
-          for (ROIEvent event : events) {
-            sb.append("- ").append(event.getSubject())
-                    .append(" from ").append(event.getStart())
-                    .append(" to ").append(event.getEnd());
-
-            if (event.getLocation() != null) {
-              System.out.println("entered null part of the if");
-              if (!event.getLocation().isEmpty()) {
-                System.out.println("entered empty part of the if");
-                sb.append(" at ").append(event.getLocation());
-              }
-
-            }
-            sb.append("\n");
-          }
-          view.renderMessage(sb.toString());
-        }
-
+        handleEventsOnDate(model, view);
       } else if (rangeStart != null && rangeStart.equals(rangeEnd)) {
-        // new logic for: show status on <datetime>
-        boolean isBusy = model.isBusyAt(rangeStart);
-        view.renderMessage(isBusy ? "busy" : "available");
-
+        handleBusyStatus(model, view);
       } else {
-        // original logic for: print events from <start> to <end>
-        List<ROIEvent> events = model.getEventsBetween(rangeStart, rangeEnd);
-        if (events.isEmpty()) {
-          view.renderMessage("No events found between " + rangeStart + " and " + rangeEnd);
-        } else {
-          StringBuilder sb = new StringBuilder("Events from " + rangeStart + " to "
-                  + rangeEnd + ":\n");
-          for (ROIEvent event : events) {
-            sb.append("- ").append(event.getSubject())
-                    .append(" from ").append(event.getStart())
-                    .append(" to ").append(event.getEnd());
-
-            if (event.getLocation() != null && !event.getLocation().isEmpty()) {
-              sb.append(" at ").append(event.getLocation());
-            }
-            sb.append("\n");
-          }
-          view.renderMessage(sb.toString());
-        }
+        handleEventsInRange(model, view);
       }
     } catch (IOException e) {
       throw new CommandExecutionException("Failed to render query results", e);
@@ -110,6 +66,78 @@ public class QueryEventsCommand implements ICommand {
     }
   }
 
+  /**
+   * Handles the "print events on date" command.
+   * Queries and renders events on a specific date.
+   *
+   * @param model the calendar model
+   * @param view  the view for rendering messages
+   * @throws IOException if rendering fails
+   */
+  private void handleEventsOnDate(IDelegator model, IView view) throws IOException {
+    List<ROIEvent> events = model.getEventsOn(queryDate);
+    if (events.isEmpty()) {
+      view.renderMessage("No events found on " + queryDate);
+    } else {
+      StringBuilder sb = new StringBuilder("Events on " + queryDate + ":\n");
+      for (ROIEvent event : events) {
+        appendEventDetails(sb, event);
+      }
+      view.renderMessage(sb.toString());
+    }
+  }
+
+  /**
+   * Handles the "show status on datetime" command.
+   * Displays whether the user is busy at a specific time.
+   *
+   * @param model the calendar model
+   * @param view  the view for rendering messages
+   * @throws IOException if rendering fails
+   */
+  private void handleBusyStatus(IDelegator model, IView view) throws IOException {
+    boolean isBusy = model.isBusyAt(rangeStart);
+    view.renderMessage(isBusy ? "busy" : "available");
+  }
+
+  /**
+   * Handles the "print events from start to end" command.
+   * Queries and renders all events in the given datetime range.
+   *
+   * @param model the calendar model
+   * @param view  the view for rendering messages
+   * @throws IOException if rendering fails
+   */
+  private void handleEventsInRange(IDelegator model, IView view) throws IOException {
+    List<ROIEvent> events = model.getEventsBetween(rangeStart, rangeEnd);
+    if (events.isEmpty()) {
+      view.renderMessage("No events found between " + rangeStart + " and " + rangeEnd);
+    } else {
+      StringBuilder sb = new StringBuilder("Events from " + rangeStart + " to " +
+              rangeEnd + ":\n");
+      for (ROIEvent event : events) {
+        appendEventDetails(sb, event);
+      }
+      view.renderMessage(sb.toString());
+    }
+  }
+
+  /**
+   * Appends formatted event details to a StringBuilder.
+   *
+   * @param sb    the StringBuilder to append to
+   * @param event the event whose details are to be formatted
+   */
+  private void appendEventDetails(StringBuilder sb, ROIEvent event) {
+    sb.append("- ").append(event.getSubject())
+            .append(" from ").append(event.getStart())
+            .append(" to ").append(event.getEnd());
+
+    if (event.getLocation() != null && !event.getLocation().isEmpty()) {
+      sb.append(" at ").append(event.getLocation());
+    }
+    sb.append("\n");
+  }
 
   /**
    * Return a string representation of the output for debugging.

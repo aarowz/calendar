@@ -13,6 +13,7 @@ edit series description "Weekly Standup" from 2025-06-05T10:00 with "Company-wid
 print events on 2025-06-10
 print events from 2025-06-01T00:00 to 2025-06-20T23:59
 show status on 2025-06-05T10:00
+show status on 2026-06-05T10:00
 edit calendar --name main --property name primary
 edit calendar --name primary --property timezone America/Chicago
 use calendar --name primary

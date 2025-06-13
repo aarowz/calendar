@@ -62,7 +62,7 @@ public class CalendarController {
       } catch (Exception e) {
         try {
           // display any error messages through the view
-          view.renderMessage("This doesn't work: " + line + "\nReason: " + e.getMessage());
+          view.renderMessage("Invalid command: " + line + "\nReason: " + e.getMessage());
         } catch (IOException io) {
           // if rendering the error fails, escalate to an unchecked exception
           throw new IllegalStateException("view failed: " + io.getMessage());
