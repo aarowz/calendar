@@ -177,15 +177,12 @@ public class TimeZoneUtilTest {
    */
   @Test
   public void testConvertEventsToZone() {
-    // source and target time zones
     ZoneId sourceZone = ZoneId.of("America/New_York"); // UTC-4 during DST
     ZoneId targetZone = ZoneId.of("Europe/London");    // UTC+1 during DST
 
-    // original local times in the source zone
     LocalDateTime sourceStart = LocalDateTime.of(2025, 7, 1, 10, 0);
     LocalDateTime sourceEnd = LocalDateTime.of(2025, 7, 1, 11, 0);
 
-    // create a source event
     IEvent original = new CalendarEvent.Builder()
             .subject("Morning Meeting")
             .start(sourceStart)
@@ -195,7 +192,6 @@ public class TimeZoneUtilTest {
             .status(EventStatus.PRIVATE)
             .build();
 
-    // convert the list
     List<IEvent> converted = TimeZoneUtil.convertEventsToZone(
             List.of(original),
             sourceZone,

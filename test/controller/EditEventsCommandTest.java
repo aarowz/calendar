@@ -116,7 +116,8 @@ public class EditEventsCommandTest {
             "Standup",
             LocalDateTime.of(2025, 6, 4, 9, 0),
             "Standup",
-            LocalDateTime.of(2025, 6, 4, 10, 0), // duplicate timing
+            LocalDateTime.of(2025, 6, 4, 10, 0),
+            // duplicate timing
             LocalDateTime.of(2025, 6, 4, 9, 0),
             null,
             null,

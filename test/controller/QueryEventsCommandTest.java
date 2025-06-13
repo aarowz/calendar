@@ -73,14 +73,16 @@ public class QueryEventsCommandTest {
             "Meeting",
             LocalDateTime.of(2025, 6, 3, 10, 0),
             LocalDateTime.of(2025, 6, 3, 11, 0),
-            "Team sync", "Room 1", EventStatus.PUBLIC, null, null, null
+            "Team sync", "Room 1", EventStatus.PUBLIC, null,
+            null, null
     );
 
     CreateEventCommand e2 = new CreateEventCommand(
             "Workshop",
             LocalDateTime.of(2025, 6, 4, 14, 0),
             LocalDateTime.of(2025, 6, 4, 16, 0),
-            "Skills", "Room 2", EventStatus.PRIVATE, null, null, null
+            "Skills", "Room 2", EventStatus.PRIVATE, null,
+            null, null
     );
 
     e1.execute(model, view);
