@@ -10,5 +10,5 @@ package controller;
  * the view and model in response to user actions such as viewing, creating,
  * editing, and switching calendars.
  */
-public class GuiCalendarController {
+public class CalendarGuiController {
 }
