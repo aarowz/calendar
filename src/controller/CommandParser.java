@@ -142,8 +142,7 @@ public class CommandParser {
       return new QueryEventsCommand(date);
     }
     // handle 'print events from <start> to <end>'
-    else if (tokens.size() >= 6 && tokens.get(1).equals("events") && tokens.get(2).equals("from"))
-    {
+    else if (tokens.size() >= 6 && tokens.get(1).equals("events") && tokens.get(2).equals("from")) {
       LocalDateTime start = LocalDateTime.parse(tokens.get(3).trim());
       LocalDateTime end = LocalDateTime.parse(tokens.get(5).trim());
       return new QueryEventsCommand(start, end);
