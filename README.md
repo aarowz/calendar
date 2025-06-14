@@ -14,6 +14,8 @@ recommendations due to how late it was given back to us. Please do not take poin
 ---
 
 ## 1) Changes in Our Program
+We added a GUICalendarController class in the controller and in the view, we added a WholeView, 
+ScrollEventsPanel, ButtonPanel, CreateEventPanel, EditEventPanel, __(View events form this date)__, NewCalendarPanel, CalendarSelectorPanel 
 
 | #  | Change Description | Justification |
 |----|--------------------|---------------|
