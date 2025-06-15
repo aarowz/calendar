@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of the ICalendar interface.
@@ -138,31 +139,34 @@ public class CalendarModel implements ICalendar {
   public void editEvents(String subject, LocalDateTime originalStart,
                          String newSubject, LocalDateTime newStart, LocalDateTime newEnd,
                          String newDescription, EventStatus newStatus, String newLocation) {
-    // set series ID to null
     UUID theSeriesID = getUuid(subject, originalStart);
     List<IEvent> seriesEvents = new ArrayList<>();
 
-    // for each event
     for (IEvent e : events) {
-      // if the series ID matches
       if (theSeriesID.equals(e.getSeriesId())) {
-        // add the event
         seriesEvents.add(e);
       }
     }
 
-    // otherwise indicate that there was no event found
     if (seriesEvents.isEmpty()) {
       throw new IllegalArgumentException("No events found for that series.");
     }
 
-    // return the updated instance of the series
     CalendarEventSeries series = new CalendarEventSeries(seriesEvents);
     List<IEvent> updated = series.editEvents(originalStart, newSubject, newStart, newEnd,
             newDescription, newStatus, newLocation);
 
-    // sanity check lol
-    events.removeAll(updated);
+    // remove old events by start time (ignore nanoseconds)
+    Set<LocalDateTime> updatedStarts = updated.stream()
+            .map(e -> e.getStart().withNano(0))
+            .collect(Collectors.toSet());
+
+    events.removeIf(e ->
+            e.getSeriesId() != null &&
+                    e.getSeriesId().equals(theSeriesID) &&
+                    updatedStarts.contains(e.getStart().withNano(0)));
+
+    // add updated events
     events.addAll(updated);
   }
 
@@ -175,32 +179,29 @@ public class CalendarModel implements ICalendar {
    * @return the extracted UUID
    */
   private UUID getUuid(String subject, LocalDateTime originalStart) {
-    // set initial null ID
-    UUID theSeriesID = null;
-
-    // for each event within the events
     for (IEvent e : events) {
-      // if the subject and start time exist given the nanosecond time adjustment
+      // match by both if possible
       if (e.getSubject().equals(subject) && e.getStart().withNano(0)
               .equals(originalStart.withNano(0))) {
-        // and the series ID is null
         if (e.getSeriesId() == null) {
-          // throw an exception to indicate that the event is an outcast >:(
           throw new IllegalArgumentException("This event is not part of a series.");
         }
-        // otherwise update the ID
-        theSeriesID = e.getSeriesId();
-        break;
+        return e.getSeriesId();
       }
     }
-    // if the ID is nonexistent
-    if (theSeriesID == null) {
-      // throw an exception
-      throw new IllegalArgumentException("No matching series found.");
-    }
-    return theSeriesID;
-  }
 
+    // fallback: match by start time only
+    for (IEvent e : events) {
+      if (e.getStart().withNano(0).equals(originalStart.withNano(0))) {
+        if (e.getSeriesId() == null) {
+          throw new IllegalArgumentException("This event is not part of a series.");
+        }
+        return e.getSeriesId();
+      }
+    }
+
+    throw new IllegalArgumentException("No matching series found.");
+  }
 
   /**
    * Edits all events in the series that this event belongs to.

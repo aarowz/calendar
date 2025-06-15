@@ -98,7 +98,7 @@ public class CreateEventCommand implements ICommand {
         model.createEventSeries(subject, description, location, status,
                 startDate, repeatUntil, seriesStartTime, seriesEndTime, days, repeatCount);
 
-        view.renderMessage("Recurring event series created: " + subject + "\n");
+        view.renderMessage("Recurring event series created: " + subject);
       }
 
     } catch (Exception e) {

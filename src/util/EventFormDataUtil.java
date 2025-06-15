@@ -8,5 +8,5 @@ package util;
  * Encapsulates all the necessary fields required to create a single calendar event,
  * including required and optional attributes.
  */
-public class EventFormData {
+public class EventFormDataUtil {
 }

@@ -4,6 +4,7 @@
 package model;
 
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -81,15 +82,23 @@ public class CalendarEventSeries implements IEventSeries {
                                  EventStatus newStatus,
                                  String newLocation) {
     List<IEvent> updated = new ArrayList<>();
-    // for each event in the occurrences
+
+    // figure out time shift if newStart is given
+    Duration shift = (newStart != null) ? Duration.between(fromDate, newStart) : null;
+    Duration duration = (newStart != null && newEnd != null) ? Duration.between(newStart, newEnd) :
+            null;
+
     for (IEvent e : this.occurrences) {
-      // if the start time is valid
       if (!e.getStart().isBefore(fromDate)) {
-        // apply any series updates
+        // shifted start and end
+        LocalDateTime updatedStart = (shift != null) ? e.getStart().plus(shift) : e.getStart();
+        LocalDateTime updatedEnd = (duration != null) ? updatedStart.plus(duration)
+                : (newEnd != null ? newEnd : e.getEnd());
+
         updated.add(new CalendarEvent.Builder()
                 .subject(newSubject != null ? newSubject : e.getSubject())
-                .start(newStart != null ? newStart : e.getStart())
-                .end(newEnd != null ? newEnd : e.getEnd())
+                .start(updatedStart)
+                .end(updatedEnd)
                 .description(newDescription != null ? newDescription : e.getDescription())
                 .status(newStatus != null ? newStatus : e.getStatus())
                 .location(newLocation != null ? newLocation : e.getLocation())

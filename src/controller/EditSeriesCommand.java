@@ -86,7 +86,7 @@ public class EditSeriesCommand implements ICommand {
               newLocation
       );
 
-      view.renderMessage("Event series successfully edited.\n");
+      view.renderMessage("Event series successfully edited.");
 
     } catch (IllegalArgumentException | NullPointerException e) {
       throw new CommandExecutionException("Failed to edit series: " + e.getMessage());

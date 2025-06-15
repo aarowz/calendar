@@ -93,11 +93,11 @@ public class EditEventCommand implements ICommand {
       );
 
       // report success
-      view.renderMessage("Event successfully edited.\n");
+      view.renderMessage("Event successfully edited.");
 
     } catch (Exception e) {
       // otherwise report failure
-      view.renderMessage("Failed to edit event: " + e + "\n");
+      view.renderMessage("Failed to edit event: " + e);
       throw new CommandExecutionException("EditEventCommand failed", e);
     }
   }
