@@ -89,24 +89,14 @@ public class CreateEventPanel extends JPanel {
 
     this.add(labeledField("Start:", createLabeledDropdownRow(
             new String[]{"Year", "Month", "Day", "Hour", "Minute"},
-            new JComboBox[]{
-                    this.startYear,
-                    this.startMonth,
-                    this.startDay,
-                    this.startHour,
+            new JComboBox[]{this.startYear, this.startMonth, this.startDay, this.startHour,
                     this.startMinute
             }
     )));
 
     this.add(labeledField("End:", createLabeledDropdownRow(
             new String[]{"Year", "Month", "Day", "Hour", "Minute"},
-            new JComboBox[]{
-                    this.endYear,
-                    this.endMonth,
-                    this.endDay,
-                    this.endHour,
-                    this.endMinute
-            }
+            new JComboBox[]{this.endYear, this.endMonth, this.endDay, this.endHour, this.endMinute}
     )));
 
     this.add(this.allDayBox);

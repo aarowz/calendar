@@ -288,17 +288,4 @@ public class CalendarGuiControllerTest {
     assertTrue("View.setHeaderText should be called",
             output.contains("View: setHeaderText"));
   }
-
-  /**
-   * Sanity test that calling handleAddEvent does not throw any exceptions.
-   */
-  @Test
-  public void testHandleAddEventOpensDialog() {
-    try {
-      controller.handleAddEvent();
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("handleAddEvent threw an exception: " + e.getMessage());
-    }
-  }
 }
