@@ -3,12 +3,18 @@
 
 package view;
 
+import model.EventStatus;
 import model.ROIEvent;
 
 import java.awt.BorderLayout;
 import java.util.List;
 
-import javax.swing.*;
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import javax.swing.JTextArea;
+import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
+import javax.swing.BorderFactory;
 
 /**
  * Panel that displays a scrollable list of calendar events.
@@ -31,7 +37,7 @@ public class ScrollEventsPanel extends JPanel {
 
     JScrollPane scrollPane = new JScrollPane(this.eventArea);
 
-    this.headerLabel = new JLabel("Displaying up to 10 events from the selected date:");
+    this.headerLabel = new JLabel("Displaying the first 10 events from the selected date:");
     this.headerLabel.setHorizontalAlignment(SwingConstants.CENTER);
     this.headerLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
     this.add(this.headerLabel, BorderLayout.NORTH);
@@ -51,7 +57,10 @@ public class ScrollEventsPanel extends JPanel {
       sb.append("No events scheduled for this day and beyond.");
     } else {
       for (ROIEvent event : events) {
-        sb.append(event.toString()).append("\n\n");
+        if (event.getStatus().equals(EventStatus.PRIVATE)) {
+          sb.append("[Private] ");
+        }
+        sb.append(event).append("\n\n");
       }
     }
 
@@ -66,12 +75,5 @@ public class ScrollEventsPanel extends JPanel {
    */
   public void setHeaderText(String text) {
     this.headerLabel.setText(text);
-  }
-
-  /**
-   * Clears the displayed event list.
-   */
-  public void clear() {
-    this.eventArea.setText("");
   }
 }

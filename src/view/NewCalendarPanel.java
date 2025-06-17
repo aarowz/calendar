@@ -10,11 +10,14 @@ import javax.swing.JComboBox;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 
+import java.time.ZoneId;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * A panel for creating a new calendar by specifying a name and timezone.
  */
 public class NewCalendarPanel extends JPanel {
-
   private final JTextField calendarNameField;
   private final JComboBox<String> timezoneDropdown;
 
@@ -23,7 +26,7 @@ public class NewCalendarPanel extends JPanel {
    */
   public NewCalendarPanel() {
     this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-    this.setBorder(BorderFactory.createTitledBorder("Create New Calendar"));
+    this.setBorder(BorderFactory.createTitledBorder("Create Calendar"));
 
     this.calendarNameField = new JTextField();
     this.timezoneDropdown = new JComboBox<>();
@@ -37,9 +40,24 @@ public class NewCalendarPanel extends JPanel {
 
   /**
    * Populates the timezone dropdown with supported timezones.
+   * By default, loads common zones sorted alphabetically.
    */
   public void loadTimezones() {
-    // stub
+    this.timezoneDropdown.removeAllItems(); // Clear previous, if any
+
+    // Get all available ZoneIds and sort alphabetically for better UX
+    List<String> zones = ZoneId.getAvailableZoneIds()
+            .stream()
+            .sorted()
+            .collect(Collectors.toList());
+
+    for (String zone : zones) {
+      this.timezoneDropdown.addItem(zone);
+    }
+
+    // Optional: select system default as a friendly default
+    String systemDefault = ZoneId.systemDefault().getId();
+    this.timezoneDropdown.setSelectedItem(systemDefault);
   }
 
   /**
@@ -48,7 +66,7 @@ public class NewCalendarPanel extends JPanel {
    * @return the name entered by the user
    */
   public String getCalendarName() {
-    return ""; // stub
+    return this.calendarNameField.getText().trim();
   }
 
   /**
@@ -57,13 +75,18 @@ public class NewCalendarPanel extends JPanel {
    * @return the selected timezone ID
    */
   public String getSelectedTimezone() {
-    return ""; // stub
+    Object selected = this.timezoneDropdown.getSelectedItem();
+    return selected != null ? selected.toString() : "";
   }
 
   /**
    * Clears all input fields.
    */
   public void reset() {
-    // stub
+    this.calendarNameField.setText("");
+    if (this.timezoneDropdown.getItemCount() > 0) {
+      // Reset to default timezone for convenience
+      this.timezoneDropdown.setSelectedItem(ZoneId.systemDefault().getId());
+    }
   }
 }

@@ -25,7 +25,6 @@ public class DatePickerDialog extends JDialog {
   private final JComboBox<Integer> yearBox;
   private final JComboBox<Integer> monthBox;
   private final JComboBox<Integer> dayBox;
-  private final JButton confirmButton;
 
   /**
    * Constructs the date picker dialog.
@@ -54,11 +53,11 @@ public class DatePickerDialog extends JDialog {
     datePanel.add(new JLabel("Day:"));
     datePanel.add(this.dayBox);
 
-    this.confirmButton = new JButton("View");
-    this.confirmButton.addActionListener(onConfirm);
+    JButton confirmButton = new JButton("View");
+    confirmButton.addActionListener(onConfirm);
 
     this.add(datePanel);
-    this.add(this.confirmButton);
+    this.add(confirmButton);
   }
 
   /**
@@ -67,9 +66,14 @@ public class DatePickerDialog extends JDialog {
    * @return the selected date
    */
   public LocalDate getSelectedDate() {
-    int year = (int) this.yearBox.getSelectedItem();
-    int month = (int) this.monthBox.getSelectedItem();
-    int day = (int) this.dayBox.getSelectedItem();
+    Integer year = (Integer) this.yearBox.getSelectedItem();
+    Integer month = (Integer) this.monthBox.getSelectedItem();
+    Integer day = (Integer) this.dayBox.getSelectedItem();
+
+    if (year == null || month == null || day == null) {
+      throw new IllegalStateException("All date fields must be selected.");
+    }
+
     return LocalDate.of(year, month, day);
   }
 }

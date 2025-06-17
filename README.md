@@ -1,6 +1,10 @@
 # CS3500 Assignment 6: Calendar (Part 3)
 
-By Dreshta Boghra & Aaron Zhou
+## Authors
+
+Dreshta Boghra & Aaron Zhou
+
+---
 
 ## Intro
 
@@ -11,24 +15,26 @@ that connect the controller and the view together.
 We fixed the bugs that exist within our model and controller thanks to the feedback from the
 assignment 5 grading. However, we did not have time to implement some of the assignment 5 self eval
 recommendations due to how late it was given back to us. Please do not take points off for that.
+
 ---
 
 ## 1) Changes in Our Program
-We added a GUICalendarController class in the controller and in the view, we added a WholeView, 
-ScrollEventsPanel, ButtonPanel, CreateEventPanel, EditEventPanel, __(View events form this date)__, NewCalendarPanel, CalendarSelectorPanel 
 
-| #  | Change Description | Justification |
-|----|--------------------|---------------|
-| 1  |                    |               |
-| 2  |                    |               |
-| 3  |                    |               |
-| 4  |                    |               |
-| 5  |                    |               |
-| 6  |                    |               |
-| 7  |                    |               |
-| 8  |                    |               |
-| 9  |                    |               |
-| 10 |                    |               |
+| #  | Change Description                         | Justification                                                                                                                                             |
+|----|--------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1  | Added ICalendarGuiFeatures interface       | Defined the controller’s feature set for the GUI to invoke in a way that avoided controller coupling.                                                     |
+| 2  | Added CalendarGuiController class          | Implemented GUI-specific controller logic to handle user interactions and update the view/model.                                                          |
+| 3  | Added ButtonPanel class                    | Encapsulated all GUI control buttons and their interactions, which helped us improve our layout modularity a LOT from our initial draft.                  |
+| 4  | Added CalendarGuiView class                | Provided the top-level GUI window, managing layout, integration with controller, and visual updates.                                                      |
+| 5  | Added CalendarSelectorPanel class          | Designed full support of switching calendars from a dropdown panel.                                                                                       |
+| 6  | Added CreateEventPanel class               | Handled the input form for creating events, including UI elements and validation logic.                                                                   |
+| 7  | Added DatePickerDialog class               | Created a reusable, user-friendly dialog for selecting dates in the GUI that applied for the adding and editing methods.                                  |
+| 8  | Added EditEventPanel class                 | Provided a form for selecting and editing existing events with full validation and pre-fill support in case the user already had certain settings stored. |
+| 9  | Added NewCalendarPanel class               | Fully implemented the panel we used to support creating new calendars in the GUI (planned future feature).                                                |
+| 10 | Added ScrollEventsPanel class              | Displayed event lists in a scrollable format, showing inline status tags like [Private].                                                                  |
+| 11 | Added DateDropDownUtil class               | Centralized dropdown logic for consistent date/time inputs across forms.                                                                                  |
+| 12 | Added DefaultCalendarInitializerUtil class | Automatically ensured a default calendar is available in GUI mode.                                                                                        |
+| 13 | Added EventFormDataUtil class              | Validated and parsed form input fields into usable LocalDateTime objects with error handling.                                                             |
 
 ---
 
@@ -65,20 +71,20 @@ and quit.
 
 ### Fully Implemented
 
-| Category             | Feature Description |
-|----------------------|---------------------|
-| **Event Creation**   |                     |
-| **Event Editing**    |                     |
-| **Event Querying**   |                     |
-| **Availability**     |                     |
-| **Calendars**        |                     |
-| **Copying Events**   |                     |
-| **Timezone Support** |                     |
-| **CLI Modes**        |                     |
-| **Command Parsing**  |                     |
-| **Termination**      |                     |
-| **Architecture**     |                     |
-| **Design Patterns**  |                     |
+| Category             | Feature Description                                                                                                          |
+|----------------------|------------------------------------------------------------------------------------------------------------------------------|
+| **Event Creation**   | We made sure that our users can create single or all-day events via a form. Private events are supported through a checkbox. |
+| **Event Editing**    | We made sure that users can select and edit existing events, including subject, time, location, and privacy status.          |
+| **Event Querying**   | We made sure that users can view up to 10 events from a selected date. Events are displayed in chronological order.          |
+| **Availability**     | Our GUI supports a visual schedule view; the controls allow user-level "availability" visualization.                         |
+| **Calendars**        | A default calendar is initialized; UI stubs are in place for switching and creating new calendars.                           |
+| **Copying Events**   | Supported in CLI (headless mode); not available via GUI in this version.                                                     |
+| **Timezone Support** | Each calendar is initialized with system timezone by default. Timezone editing is stubbed.                                   |
+| **CLI Modes**        | Headless mode supports script-based calendar commands. GUI mode is fully interactive.                                        |
+| **Command Parsing**  | Robust CLI command parser supports creation, editing, querying, copying, and more.                                           |
+| **Termination**      | GUI closes gracefully via standard window controls. CLI completes upon script execution.                                     |
+| **Architecture**     | Clean MVC structure with separate model, controller, and view layers. GUI components are modular.                            |
+| **Design Patterns**  | Command, Strategy, MVC, and Interface Segregation are all demonstrated through extensible GUI logic.                         |
 
 ### Not Yet Completed
 

@@ -19,7 +19,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
-import model.EventStatus;
 import util.DateDropDownUtil;
 import util.EventFormDataUtil;
 
@@ -27,37 +26,44 @@ import util.EventFormDataUtil;
  * A form panel used to collect input for creating a new calendar event.
  */
 public class CreateEventPanel extends JPanel {
-  private final JCheckBox allDayBox;
-  private final JTextField subjectField;
-  private final JComboBox<Integer> startYear;
-  private final JComboBox<Integer> startMonth;
-  private final JComboBox<Integer> startDay;
-  private final JComboBox<Integer> startHour;
-  private final JComboBox<Integer> startMinute;
-
-  private final JComboBox<Integer> endYear;
-  private final JComboBox<Integer> endMonth;
-  private final JComboBox<Integer> endDay;
-  private final JComboBox<Integer> endHour;
-  private final JComboBox<Integer> endMinute;
-
-  private final JTextField locationField;
-  private final JTextArea descriptionArea;
-  private final JCheckBox isPrivateBox;
+  private JCheckBox privateCheckBox;
+  private JCheckBox allDayBox;
+  private JTextField subjectField;
+  private JComboBox<Integer> startYear;
+  private JComboBox<Integer> startMonth;
+  private JComboBox<Integer> startDay;
+  private JComboBox<Integer> startHour;
+  private JComboBox<Integer> startMinute;
+  private JComboBox<Integer> endYear;
+  private JComboBox<Integer> endMonth;
+  private JComboBox<Integer> endDay;
+  private JComboBox<Integer> endHour;
+  private JComboBox<Integer> endMinute;
+  private JTextField locationField;
+  private JTextArea descriptionArea;
 
   /**
    * Constructs the form panel for creating an event.
+   * Initializes all UI components, arranges them in layout,
+   * and wires listeners for interactive behavior (e.g. All-Day checkbox).
    */
   public CreateEventPanel() {
     this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     this.setBorder(BorderFactory.createTitledBorder("New Event"));
 
-    this.allDayBox = new JCheckBox("All-Day Event");
+    initFields();
+    layoutFields();
+    addListeners();
+  }
 
+  /**
+   * Initializes all form input fields and dropdown components.
+   */
+  private void initFields() {
+    this.allDayBox = new JCheckBox("All-Day Event");
     this.subjectField = new JTextField(20);
     this.locationField = new JTextField(20);
     this.descriptionArea = new JTextArea(4, 20);
-    this.isPrivateBox = new JCheckBox("Private");
 
     this.startYear = DateDropDownUtil.createYearDropdown();
     this.startMonth = DateDropDownUtil.createMonthDropdown();
@@ -70,8 +76,13 @@ public class CreateEventPanel extends JPanel {
     this.endDay = DateDropDownUtil.createDayDropdown();
     this.endHour = DateDropDownUtil.createHourDropdown();
     this.endMinute = DateDropDownUtil.createMinuteDropdown();
+    this.privateCheckBox = new JCheckBox("Private Event");
+  }
 
-    // Add fields
+  /**
+   * Arranges all input fields into the form layout with aligned labels.
+   */
+  private void layoutFields() {
     this.add(labeledField("Subject:", this.subjectField));
     this.add(labeledField("Location:", this.locationField));
     this.add(labeledField("Description:", new JScrollPane(this.descriptionArea)));
@@ -81,19 +92,26 @@ public class CreateEventPanel extends JPanel {
             new JComboBox[]{
                     this.startYear, this.startMonth, this.startDay,
                     this.startHour, this.startMinute
-            })));
+            }
+    )));
 
     this.add(labeledField("End:", createLabeledDropdownRow(
             new String[]{"Year", "Month", "Day", "Hour", "Minute"},
             new JComboBox[]{
                     this.endYear, this.endMonth, this.endDay,
                     this.endHour, this.endMinute
-            })));
+            }
+    )));
 
-    this.add(this.isPrivateBox);
     this.add(this.allDayBox);
+    this.add(this.privateCheckBox);
+  }
 
-    // Only one listener needed — now handles full end date disable
+  /**
+   * Attaches interactive behaviors such as enabling/disabling fields
+   * based on checkbox selections (e.g. all-day events).
+   */
+  private void addListeners() {
     this.allDayBox.addActionListener(e -> {
       boolean isAllDay = this.allDayBox.isSelected();
 
@@ -115,7 +133,6 @@ public class CreateEventPanel extends JPanel {
     this.subjectField.setText("");
     this.locationField.setText("");
     this.descriptionArea.setText("");
-    this.isPrivateBox.setSelected(false);
 
     this.startYear.setSelectedIndex(0);
     this.startMonth.setSelectedIndex(0);
@@ -136,36 +153,23 @@ public class CreateEventPanel extends JPanel {
    * @return true if valid, false otherwise
    */
   public boolean isValidForm() {
-    if (this.subjectField.getText().trim().isEmpty()) {
-      return false;
-    }
-
     try {
+      EventFormDataUtil.requireNonEmpty(this.subjectField, "Subject");
+
+      // date logic
       LocalDateTime start;
       LocalDateTime end;
 
       if (this.isAllDayEvent()) {
-        // Use only year/month/day from dropdowns, and supply fixed 8–5 times
-        start = util.EventFormDataUtil.parseDateTime(
-                this.startYear, this.startMonth, this.startDay,
-                new javax.swing.JComboBox<>(new Integer[]{8}), // fake box for validation
-                new javax.swing.JComboBox<>(new Integer[]{0})
-        );
+        start = this.getStartDateTime().withHour(8).withMinute(0);
         end = start.withHour(17).withMinute(0);
       } else {
-        // Use full date/time selected by user
-        start = util.EventFormDataUtil.parseDateTime(
-                this.startYear, this.startMonth, this.startDay,
-                this.startHour, this.startMinute
-        );
-        end = util.EventFormDataUtil.parseDateTime(
-                this.endYear, this.endMonth, this.endDay,
-                this.endHour, this.endMinute
-        );
+        start = this.getStartDateTime();
+        end = this.getEndDateTime();
       }
 
       return start.isBefore(end);
-    } catch (Exception e) {
+    } catch (IllegalArgumentException e) {
       return false;
     }
   }
@@ -234,17 +238,6 @@ public class CreateEventPanel extends JPanel {
   }
 
   /**
-   * Returns the selected event status (public or private).
-   *
-   * @return the event status
-   */
-  public EventStatus getStatus() {
-    return this.isPrivateBox.isSelected()
-            ? EventStatus.PRIVATE
-            : EventStatus.PUBLIC;
-  }
-
-  /**
    * Returns the start date and time selected in the form.
    *
    * @return the event start LocalDateTime
@@ -271,5 +264,14 @@ public class CreateEventPanel extends JPanel {
    */
   public boolean isAllDayEvent() {
     return this.allDayBox.isSelected();
+  }
+
+  /**
+   * Returns whether the private event checkbox is selected.
+   *
+   * @return true if the event is private
+   */
+  public boolean isPrivateEvent() {
+    return this.privateCheckBox.isSelected();
   }
 }

@@ -148,4 +148,9 @@ public class DelegatorImpl implements IDelegator {
                                 LocalDate targetStartDate) {
     calendarSystem.copyEventsBetween(start, end, targetCalendar, targetStartDate);
   }
+
+  @Override
+  public List<String> getCalendarNames() {
+    return calendarSystem.getCalendarNames();
+  }
 }

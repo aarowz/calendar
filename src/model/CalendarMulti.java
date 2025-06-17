@@ -428,6 +428,15 @@ public class CalendarMulti implements ICalendarMulti {
     copyShiftedEventsToTarget(events, target, dayOffset);
   }
 
+  @Override
+  public List<String> getCalendarNames() {
+    List<String> names = new ArrayList<>();
+    for (String name : this.calendars.keySet()) {
+      names.add(name);
+    }
+    return names;
+  }
+
   /**
    * Resolves all full IEvent objects occurring between two dates from the source calendar.
    *

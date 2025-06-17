@@ -6,6 +6,7 @@ package model;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.*;
 
 /**
  * Interface representing the calendar system capable of managing multiple calendars.
@@ -89,4 +90,9 @@ public interface ICalendarMulti {
    */
   void copyEventsBetween(LocalDate start, LocalDate end,
                          String targetCalendar, LocalDate targetStartDate);
+
+  /**
+   * Returns a list of the calendar names.
+   */
+  List<String> getCalendarNames();
 }

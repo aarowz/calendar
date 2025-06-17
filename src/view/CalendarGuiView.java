@@ -78,4 +78,13 @@ public class CalendarGuiView extends JFrame {
   public void setHeaderText(String text) {
     this.scrollEventsPanel.setHeaderText(text);
   }
+
+  /**
+   * Gets the button panel within the view.
+   *
+   * @return the button panel
+   */
+  public ButtonPanel getButtonPanel() {
+    return this.buttonPanel;
+  }
 }

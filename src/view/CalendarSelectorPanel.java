@@ -4,8 +4,8 @@
 package view;
 
 import javax.swing.JPanel;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JComboBox;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 
@@ -36,7 +36,18 @@ public class CalendarSelectorPanel extends JPanel {
    * @param calendarNames the list of calendar names
    */
   public void loadCalendars(List<String> calendarNames) {
-    // stub
+    this.calendarDropdown.removeAllItems(); // Clear existing items
+
+    if (calendarNames != null) {
+      for (String name : calendarNames) {
+        this.calendarDropdown.addItem(name);
+      }
+    }
+
+    // Optional: select the first calendar by default if any exist
+    if (this.calendarDropdown.getItemCount() > 0) {
+      this.calendarDropdown.setSelectedIndex(0);
+    }
   }
 
   /**
@@ -45,13 +56,14 @@ public class CalendarSelectorPanel extends JPanel {
    * @return the selected calendar name
    */
   public String getSelectedCalendar() {
-    return ""; // stub
+    Object selected = this.calendarDropdown.getSelectedItem();
+    return selected != null ? selected.toString() : "";
   }
 
   /**
    * Clears the calendar selection dropdown.
    */
   public void reset() {
-    // stub
+    this.calendarDropdown.removeAllItems();
   }
 }

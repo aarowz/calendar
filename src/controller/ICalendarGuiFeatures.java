@@ -28,4 +28,14 @@ public interface ICalendarGuiFeatures {
    * Handles a request to switch the active calendar.
    */
   void handleSwitchCalendar();
+
+  /**
+   * Handles a request to switch the active calendar.
+   */
+  void handleCreateCalendar();
+
+  /**
+   * Refreshes the schedule of the GUI.
+   */
+  void refreshSchedule();
 }
