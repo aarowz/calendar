@@ -437,6 +437,10 @@ public class CalendarGuiController implements ICalendarGuiFeatures {
     dialog.dispose();
   }
 
+  // –-------------–-------------–--------
+  // Switch calendars controller functions
+  // –-------------–-------------–--------
+
   /**
    * Handles a request to switch the active calendar.
    */
@@ -451,6 +455,26 @@ public class CalendarGuiController implements ICalendarGuiFeatures {
     dialog.setLayout(new BorderLayout());
     dialog.add(selector, BorderLayout.CENTER);
 
+    JPanel buttonPanel = getjPanel(selector, dialog);
+    dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+    dialog.pack();
+    dialog.setLocationRelativeTo(this.view);
+    dialog.setVisible(true);
+  }
+
+  /**
+   * Creates and returns a JPanel containing a "Switch" button used to confirm
+   * calendar selection from the CalendarSelectorPanel.
+   * When clicked, the button validates that a calendar has been selected,
+   * switches the model to use the selected calendar, updates the current calendar name,
+   * refreshes the schedule view, and closes the dialog.
+   *
+   * @param selector the CalendarSelectorPanel containing the calendar selection dropdown
+   * @param dialog   the dialog window to close upon successful calendar switch
+   * @return a JPanel containing the "Switch" button aligned to the right
+   */
+  private JPanel getjPanel(CalendarSelectorPanel selector, JDialog dialog) {
     JButton confirm = new JButton("Switch");
     confirm.addActionListener(e -> {
       try {
@@ -471,12 +495,12 @@ public class CalendarGuiController implements ICalendarGuiFeatures {
 
     JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
     buttonPanel.add(confirm);
-    dialog.add(buttonPanel, BorderLayout.SOUTH);
-
-    dialog.pack();
-    dialog.setLocationRelativeTo(this.view);
-    dialog.setVisible(true);
+    return buttonPanel;
   }
+
+  // –-------------–-------------–--------
+  // Create calendars controller functions
+  // –-------------–-------------–--------
 
   /**
    * Handles a request to create a new calendar.
@@ -492,6 +516,27 @@ public class CalendarGuiController implements ICalendarGuiFeatures {
     dialog.setLayout(new BorderLayout());
     dialog.add(panel, BorderLayout.CENTER);
 
+    JButton confirm = getjButton(panel, dialog);
+
+    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+    buttonPanel.add(confirm);
+    dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+    dialog.pack();
+    dialog.setLocationRelativeTo(this.view);
+    dialog.setVisible(true);
+  }
+
+  /**
+   * Creates and returns a "Create" button for the new calendar creation dialog.
+   * When clicked, it validates the form input, creates a new calendar in the model
+   * using the provided name and timezone, switches to it, and updates the GUI schedule view.
+   *
+   * @param panel  the NewCalendarPanel containing user input for calendar name and timezone
+   * @param dialog the dialog window that will be closed upon successful creation
+   * @return a fully configured JButton labeled "Create"
+   */
+  private JButton getjButton(NewCalendarPanel panel, JDialog dialog) {
     JButton confirm = new JButton("Create");
     confirm.addActionListener(e -> {
       try {
@@ -500,9 +545,6 @@ public class CalendarGuiController implements ICalendarGuiFeatures {
 
         if (name == null || name.isEmpty()) {
           throw new IllegalArgumentException("Calendar name cannot be empty.");
-        }
-        if (timezone == null) {
-          throw new IllegalArgumentException("You must select a timezone.");
         }
 
         this.model.createCalendar(name, timezone);
@@ -517,14 +559,7 @@ public class CalendarGuiController implements ICalendarGuiFeatures {
         this.view.showError("Failed to create calendar: " + ex.getMessage());
       }
     });
-
-    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-    buttonPanel.add(confirm);
-    dialog.add(buttonPanel, BorderLayout.SOUTH);
-
-    dialog.pack();
-    dialog.setLocationRelativeTo(this.view);
-    dialog.setVisible(true);
+    return confirm;
   }
 
   /**

@@ -96,16 +96,22 @@ public class EditEventPanel extends JPanel {
     this.add(labeledField("New Start Date & Time:", createLabeledDropdownRow(
             new String[]{"Year", "Month", "Day", "Hour", "Minute"},
             new JComboBox[]{
-                    this.startYear, this.startMonth, this.startDay,
-                    this.startHour, this.startMinute
+                    this.startYear,
+                    this.startMonth,
+                    this.startDay,
+                    this.startHour,
+                    this.startMinute
             }
     )));
 
     this.add(labeledField("New End Date & Time:", createLabeledDropdownRow(
             new String[]{"Year", "Month", "Day", "Hour", "Minute"},
             new JComboBox[]{
-                    this.endYear, this.endMonth, this.endDay,
-                    this.endHour, this.endMinute
+                    this.endYear,
+                    this.endMonth,
+                    this.endDay,
+                    this.endHour,
+                    this.endMinute
             }
     )));
 
@@ -151,7 +157,9 @@ public class EditEventPanel extends JPanel {
   private void addEventSelectorListener() {
     this.eventSelector.addActionListener(e -> {
       model.IEvent selected = (model.IEvent) this.eventSelector.getSelectedItem();
-      if (selected == null) return;
+      if (selected == null) {
+        return;
+      }
 
       fillEventForm(selected);
       detectAndApplyAllDayState(selected);
@@ -251,33 +259,6 @@ public class EditEventPanel extends JPanel {
     this.endDay.setSelectedIndex(0);
     this.endHour.setSelectedIndex(0);
     this.endMinute.setSelectedIndex(0);
-  }
-
-  /**
-   * Returns whether the form inputs are valid.
-   *
-   * @return true if valid, false otherwise
-   */
-  public boolean isValidForm() {
-    try {
-      EventFormDataUtil.requireNonEmpty(this.subjectField, "Subject");
-
-      // date logic
-      LocalDateTime start;
-      LocalDateTime end;
-
-      if (this.isAllDayEvent()) {
-        start = this.getStartDateTime().withHour(8).withMinute(0);
-        end = start.withHour(17).withMinute(0);
-      } else {
-        start = this.getStartDateTime();
-        end = this.getEndDateTime();
-      }
-
-      return start.isBefore(end);
-    } catch (IllegalArgumentException e) {
-      return false;
-    }
   }
 
   /**

@@ -90,16 +90,22 @@ public class CreateEventPanel extends JPanel {
     this.add(labeledField("Start:", createLabeledDropdownRow(
             new String[]{"Year", "Month", "Day", "Hour", "Minute"},
             new JComboBox[]{
-                    this.startYear, this.startMonth, this.startDay,
-                    this.startHour, this.startMinute
+                    this.startYear,
+                    this.startMonth,
+                    this.startDay,
+                    this.startHour,
+                    this.startMinute
             }
     )));
 
     this.add(labeledField("End:", createLabeledDropdownRow(
             new String[]{"Year", "Month", "Day", "Hour", "Minute"},
             new JComboBox[]{
-                    this.endYear, this.endMonth, this.endDay,
-                    this.endHour, this.endMinute
+                    this.endYear,
+                    this.endMonth,
+                    this.endDay,
+                    this.endHour,
+                    this.endMinute
             }
     )));
 
@@ -145,33 +151,6 @@ public class CreateEventPanel extends JPanel {
     this.endDay.setSelectedIndex(0);
     this.endHour.setSelectedIndex(0);
     this.endMinute.setSelectedIndex(0);
-  }
-
-  /**
-   * Returns whether the form inputs are valid.
-   *
-   * @return true if valid, false otherwise
-   */
-  public boolean isValidForm() {
-    try {
-      EventFormDataUtil.requireNonEmpty(this.subjectField, "Subject");
-
-      // date logic
-      LocalDateTime start;
-      LocalDateTime end;
-
-      if (this.isAllDayEvent()) {
-        start = this.getStartDateTime().withHour(8).withMinute(0);
-        end = start.withHour(17).withMinute(0);
-      } else {
-        start = this.getStartDateTime();
-        end = this.getEndDateTime();
-      }
-
-      return start.isBefore(end);
-    } catch (IllegalArgumentException e) {
-      return false;
-    }
   }
 
   /**

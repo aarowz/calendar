@@ -35,6 +35,7 @@ recommendations due to how late it was given back to us. Please do not take poin
 | 11 | Added DateDropDownUtil class               | Centralized dropdown logic for consistent date/time inputs across forms.                                                                                  |
 | 12 | Added DefaultCalendarInitializerUtil class | Automatically ensured a default calendar is available in GUI mode.                                                                                        |
 | 13 | Added EventFormDataUtil class              | Validated and parsed form input fields into usable LocalDateTime objects with error handling.                                                             |
+| 14 | Added CalendarGuiControllerTest class      | Testing the new controller that deals with every additional implementation we made in the GUI                                                             |
 
 ---
 
@@ -62,8 +63,7 @@ To open the **GUI**, execute the command:
 java -jar calendarGit.jar
 ```
 
-If any other command-line arguments are entered, the program will display an error message suitably
-and quit.
+or double-click on `calendarGit.jar` in your finder.
 
 ---
 
@@ -71,20 +71,20 @@ and quit.
 
 ### Fully Implemented
 
-| Category             | Feature Description                                                                                                          |
-|----------------------|------------------------------------------------------------------------------------------------------------------------------|
-| **Event Creation**   | We made sure that our users can create single or all-day events via a form. Private events are supported through a checkbox. |
-| **Event Editing**    | We made sure that users can select and edit existing events, including subject, time, location, and privacy status.          |
-| **Event Querying**   | We made sure that users can view up to 10 events from a selected date. Events are displayed in chronological order.          |
-| **Availability**     | Our GUI supports a visual schedule view; the controls allow user-level "availability" visualization.                         |
-| **Calendars**        | A default calendar is initialized; UI stubs are in place for switching and creating new calendars.                           |
-| **Copying Events**   | Supported in CLI (headless mode); not available via GUI in this version.                                                     |
-| **Timezone Support** | Each calendar is initialized with system timezone by default. Timezone editing is stubbed.                                   |
-| **CLI Modes**        | Headless mode supports script-based calendar commands. GUI mode is fully interactive.                                        |
-| **Command Parsing**  | Robust CLI command parser supports creation, editing, querying, copying, and more.                                           |
-| **Termination**      | GUI closes gracefully via standard window controls. CLI completes upon script execution.                                     |
-| **Architecture**     | Clean MVC structure with separate model, controller, and view layers. GUI components are modular.                            |
-| **Design Patterns**  | Command, Strategy, MVC, and Interface Segregation are all demonstrated through extensible GUI logic.                         |
+| Category             | Feature Description                                                                                                                       |
+|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| **Event Creation**   | We made sure that our users can create single or all-day events via a form. Private events are supported through a checkbox.              |
+| **Event Editing**    | We made sure that users can select and edit existing events, including subject, time, location, and privacy status.                       |
+| **Event Querying**   | We made sure that users can view up to 10 events from a selected date. Events are displayed in chronological order.                       |
+| **Availability**     | We made sure that our GUI supports a visual schedule view; the controls allow user-level "availability" visualization.                    |
+| **Calendars**        | We made sure that a default calendar is initialized; UI stubs are in place for switching and creating new calendars.                      |
+| **Copying Events**   | We made sure that our script was supported in CLI (headless mode); not available via GUI in this version.                                 |
+| **Timezone Support** | We made sure that each calendar is initialized with system timezone by default. Timezone editing is stubbed.                              |
+| **CLI Modes**        | We made sure that headless mode supports script-based calendar commands. GUI mode is fully interactive.                                   |
+| **Command Parsing**  | We made sure that robust CLI command parser supports creation, editing, querying, copying, and more.                                      |
+| **Termination**      | We made sure that our GUI closes gracefully via standard window controls. CLI completes upon script execution.                            |
+| **Architecture**     | We made sure that our program contained clean MVC structure with separate model, controller, and view layers. GUI components are modular. |
+| **Design Patterns**  | We made sure that command, Strategy, MVC, and Interface Segregation are all demonstrated through extensible GUI logic.                    |
 
 ### Not Yet Completed
 
@@ -94,7 +94,7 @@ and quit.
 
 ---
 
-## 4) Team Member Contributions for assignment 4 and 5
+## 4) Team Member Contributions
 
 | Component        | Contributor     |
 |------------------|-----------------|
@@ -112,12 +112,14 @@ and quit.
 
 ## 5) Additional Information for Grading
 
-- We added a TON of comments to be able to keep track of where we are for the follow-up assignments.
+- **We believe that we are fully eligible to receive every single extra credit point due to fully
+  implementing the create new calendar, edit single event, and switch between calendars functions
+  within the GUI.**
 - We tried our best so that all controller and view components use **Builder pattern** for
   construction.
 - We made sure that code follows **MVC design principles** with separation between model, view, and
   controller for both tests and implementations.
-- We made sure that each command is encapsulated in its own class using the **Command design pattern
-  **.
-- We made sure (or at least believe) that our entire project is documented with **Javadoc** and *
-  *consistent formatting**.
+- We made sure that each command is encapsulated in its own class using the
+- **Command design pattern**.
+- We made sure (or at least believe) that our entire project is documented with **Javadoc** and
+  **consistent formatting**.

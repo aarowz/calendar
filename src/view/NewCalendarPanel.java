@@ -43,9 +43,9 @@ public class NewCalendarPanel extends JPanel {
    * By default, loads common zones sorted alphabetically.
    */
   public void loadTimezones() {
-    this.timezoneDropdown.removeAllItems(); // Clear previous, if any
+    this.timezoneDropdown.removeAllItems();
 
-    // Get all available ZoneIds and sort alphabetically for better UX
+    // get all available ZoneIds and sort alphabetically
     List<String> zones = ZoneId.getAvailableZoneIds()
             .stream()
             .sorted()
@@ -55,7 +55,7 @@ public class NewCalendarPanel extends JPanel {
       this.timezoneDropdown.addItem(zone);
     }
 
-    // Optional: select system default as a friendly default
+    // optional: select system default as a friendly default
     String systemDefault = ZoneId.systemDefault().getId();
     this.timezoneDropdown.setSelectedItem(systemDefault);
   }
@@ -85,7 +85,7 @@ public class NewCalendarPanel extends JPanel {
   public void reset() {
     this.calendarNameField.setText("");
     if (this.timezoneDropdown.getItemCount() > 0) {
-      // Reset to default timezone for convenience
+      // reset to default timezone for convenience
       this.timezoneDropdown.setSelectedItem(ZoneId.systemDefault().getId());
     }
   }

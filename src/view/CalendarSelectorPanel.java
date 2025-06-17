@@ -44,7 +44,7 @@ public class CalendarSelectorPanel extends JPanel {
       }
     }
 
-    // Optional: select the first calendar by default if any exist
+    // optional: select the first calendar by default if any exist
     if (this.calendarDropdown.getItemCount() > 0) {
       this.calendarDropdown.setSelectedIndex(0);
     }
@@ -58,12 +58,5 @@ public class CalendarSelectorPanel extends JPanel {
   public String getSelectedCalendar() {
     Object selected = this.calendarDropdown.getSelectedItem();
     return selected != null ? selected.toString() : "";
-  }
-
-  /**
-   * Clears the calendar selection dropdown.
-   */
-  public void reset() {
-    this.calendarDropdown.removeAllItems();
   }
 }

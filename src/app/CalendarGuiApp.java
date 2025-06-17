@@ -7,23 +7,31 @@ import controller.CalendarGuiController;
 import model.CalendarMulti;
 import model.DelegatorImpl;
 import model.IDelegator;
-import util.DefaultCalendarInitializerUtil;
 import view.CalendarGuiView;
 
 /**
- * Entry point to launch the calendar in GUI mode.
+ * Entry point to launch the calendar in GUI mode or dispatch CLI modes.
  */
 public class CalendarGuiApp {
 
   /**
-   * Launches the GUI version of the calendar app.
+   * Launches the calendar application in GUI mode by default.
+   * Supports command-line override via:
+   * --mode headless path/to/script.txt
+   * --mode interactive (optional)
    *
-   * @param args command-line arguments (unused)
+   * @param args command-line arguments
    */
   public static void main(String[] args) {
-    IDelegator model = new DelegatorImpl(new CalendarMulti());
-    String defaultCalendar = DefaultCalendarInitializerUtil.createDefaultCalendar(model);
+    if (args.length > 1 && args[0].equals("--mode")) {
+      if (args[1].equals("headless") || args[1].equals("interactive")) {
+        CalendarApp.main(args);
+        return;
+      }
+    }
 
+    // Default: launch GUI
+    IDelegator model = new DelegatorImpl(new CalendarMulti());
     CalendarGuiView view = new CalendarGuiView();
     new CalendarGuiController(model, view);
   }
