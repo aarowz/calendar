@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 /**
  * A panel for creating a new calendar by specifying a name and timezone.
  */
-public class NewCalendarPanel extends JPanel {
+public class NewCalendarPanel extends JPanel implements INewCalendarPanel {
   private final JTextField calendarNameField;
   private final JComboBox<String> timezoneDropdown;
 

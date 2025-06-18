@@ -18,7 +18,7 @@ import javax.swing.JCheckBox;
  * Panel that displays the control buttons on the right side of the GUI.
  * Includes buttons for viewing, adding, editing events, and switching calendars.
  */
-public class ButtonPanel extends JPanel {
+public class ButtonPanel extends JPanel implements IButtonPanel {
   private ICalendarGuiFeatures features;
   private final JCheckBox displayPrivateBox;
   private final JButton viewScheduleButton;

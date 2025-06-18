@@ -20,7 +20,7 @@ import java.time.LocalDate;
 /**
  * A modal dialog that allows the user to select a specific date.
  */
-public class DatePickerDialog extends JDialog {
+public class DatePickerDialog extends JDialog implements IDatePickerDialog {
 
   private final JComboBox<Integer> yearBox;
   private final JComboBox<Integer> monthBox;

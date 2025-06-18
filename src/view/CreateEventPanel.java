@@ -25,7 +25,7 @@ import util.EventFormDataUtil;
 /**
  * A form panel used to collect input for creating a new calendar event.
  */
-public class CreateEventPanel extends JPanel {
+public class CreateEventPanel extends JPanel implements ICreateEventPanel {
   private JCheckBox privateCheckBox;
   private JCheckBox allDayBox;
   private JTextField subjectField;

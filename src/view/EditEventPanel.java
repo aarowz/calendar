@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * A form panel for selecting and editing an existing event.
  */
-public class EditEventPanel extends JPanel {
+public class EditEventPanel extends JPanel implements IEditEventPanel {
   private JCheckBox privateCheckBox;
   private JCheckBox allDayBox;
   private JComboBox<ROIEvent> eventSelector;

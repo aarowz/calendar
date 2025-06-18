@@ -20,7 +20,7 @@ import javax.swing.BorderFactory;
  * Panel that displays a scrollable list of calendar events.
  * Used as the left-hand side of the main calendar GUI layout.
  */
-public class ScrollEventsPanel extends JPanel {
+public class ScrollEventsPanel extends JPanel implements IScrollEventsPanel {
   private final JLabel headerLabel;
   private final JTextArea eventArea;
 

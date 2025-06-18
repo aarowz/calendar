@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * A panel for selecting an existing calendar from a list of calendar names.
  */
-public class CalendarSelectorPanel extends JPanel {
+public class CalendarSelectorPanel extends JPanel implements ICalendarSelectorPanel{
 
   private final JComboBox<String> calendarDropdown;
 
