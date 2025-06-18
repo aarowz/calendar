@@ -17,7 +17,7 @@ import model.ROIEvent;
  * The graphical user interface for the calendar application.
  * This class manages the main application window and its layout.
  */
-public class CalendarGuiView extends JFrame implements ICalendarGuiView{
+public class CalendarGuiView extends JFrame implements ICalendarGuiView {
   private final ScrollEventsPanel scrollEventsPanel;
   private final ButtonPanel buttonPanel;
 

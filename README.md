@@ -35,7 +35,7 @@ recommendations due to how late it was given back to us. Please do not take poin
 | 11 | Added DateDropDownUtil class               | Centralized dropdown logic for consistent date/time inputs across forms.                                                                                  |
 | 12 | Added DefaultCalendarInitializerUtil class | Automatically ensured a default calendar is available in GUI mode.                                                                                        |
 | 13 | Added EventFormDataUtil class              | Validated and parsed form input fields into usable LocalDateTime objects with error handling.                                                             |
-| 14 | Added CalendarGuiControllerTest class      | Testing the new controller that deals with every additional implementation we made in the GUI                                                             |
+| 14 | Added CalendarGuiControllerTest class      | Testing the new controller that deals with every additional implementation we made in the GUI.                                                            |
 
 ---
 
