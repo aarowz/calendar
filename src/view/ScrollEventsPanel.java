@@ -47,7 +47,6 @@ public class ScrollEventsPanel extends JPanel implements IScrollEventsPanel {
 
   /**
    * Updates the displayed text to show the given list of events.
-   *
    * @param events the list of events to display
    */
   public void displayEvents(List<ROIEvent> events) {
@@ -70,7 +69,6 @@ public class ScrollEventsPanel extends JPanel implements IScrollEventsPanel {
 
   /**
    * Sets the header for displaying events based on the current start day.
-   *
    * @param text the current start day
    */
   public void setHeaderText(String text) {
