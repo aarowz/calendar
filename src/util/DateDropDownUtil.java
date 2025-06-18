@@ -23,7 +23,7 @@ public class DateDropDownUtil {
     JComboBox<Integer> box = new JComboBox<>();
     int currentYear = Year.now().getValue();
 
-    for (int y = currentYear - 5; y <= currentYear + 5; y++) {
+    for (int y = currentYear - 50; y <= currentYear + 50; y++) {
       box.addItem(y);
     }
 
